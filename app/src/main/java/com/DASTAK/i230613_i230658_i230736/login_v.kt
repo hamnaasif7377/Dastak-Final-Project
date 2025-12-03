@@ -99,8 +99,11 @@ class login_v : AppCompatActivity() {
                         if (selectedRole == accountRole) {
                             with(sharedPref.edit()) {
                                 putBoolean("isLoggedIn", true)
-                                putString("email", email)
-                                putString("role", accountRole) // save the role
+                                putInt("user_id", userObj.getInt("user_id")) // ← This was missing!
+                                putString("name", userObj.getString("name"))
+                                putString("email", userObj.getString("email"))
+                                putString("role", accountRole)
+                                putString("profile_image", userObj.getString("profile_image"))
                                 apply()
                             }
 

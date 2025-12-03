@@ -28,7 +28,6 @@ class login_o : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        // ⚠ FIXED: Use correct organization login layout
         setContentView(R.layout.activity_login_o)
 
         val sharedPref = getSharedPreferences("userPrefs", Context.MODE_PRIVATE)
@@ -87,17 +86,25 @@ class login_o : AppCompatActivity() {
                     val json = JSONObject(response)
                     val status = json.getString("status")
 
-
                     if (status == "success") {
-                        val userObj = json.getJSONObject("user")  // ← get the nested object
+                        val userObj = json.getJSONObject("user")
                         val accountRole = userObj.getString("role")
 
                         // Role validation
                         if (selectedRole == accountRole) {
+                            // ✅ FIXED: Save ALL user data including user_id
                             with(sharedPref.edit()) {
                                 putBoolean("isLoggedIn", true)
-                                putString("email", email)
-                                putString("role", accountRole) // save the role
+                                putInt("user_id", userObj.getInt("user_id")) // ← CRITICAL FIX
+                                putString("name", userObj.getString("name"))
+                                putString("email", userObj.getString("email"))
+                                putString("role", accountRole)
+
+                                // Save profile image if exists
+                                if (userObj.has("profile_image") && !userObj.isNull("profile_image")) {
+                                    putString("profile_image", userObj.getString("profile_image"))
+                                }
+
                                 apply()
                             }
 
@@ -115,12 +122,15 @@ class login_o : AppCompatActivity() {
                                 Toast.LENGTH_LONG
                             ).show()
                         }
+                    } else {
+                        // Handle error message from server
+                        val message = json.getString("message")
+                        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
                     }
-
 
                 } catch (e: Exception) {
                     e.printStackTrace()
-                    Toast.makeText(this, "Server error / invalid response", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this, "Server error: ${e.message}", Toast.LENGTH_LONG).show()
                 }
             },
             { error ->
