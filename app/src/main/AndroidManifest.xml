@@ -2,6 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.INTERNET" />
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -10,7 +11,38 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.I230613_i230658_i230736">
+        android:theme="@style/Theme.I230613_i230658_i230736"
+        android:usesCleartextTraffic="true">
+        <activity
+            android:name=".createOpportunityorg"
+            android:exported="false" />
+        <activity
+            android:name=".organizationProfile"
+            android:exported="false" />
+        <activity
+            android:name=".login_o"
+            android:exported="false" />
+        <activity
+            android:name=".OrgHomeActivity"
+            android:exported="false" />
+        <activity
+            android:name=".VolunteerHomeActivity"
+            android:exported="false" />
+        <activity
+            android:name=".signup_o"
+            android:exported="false" />
+        <activity
+            android:name=".signup_v"
+            android:exported="false" />
+        <activity
+            android:name=".RoleActivity"
+            android:exported="false" />
+        <activity
+            android:name=".intro"
+            android:exported="false" />
+        <activity
+            android:name=".login_v"
+            android:exported="false" />
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -20,6 +52,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
     </application>
 
 </manifest>

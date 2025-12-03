@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#D9D9D9">
+
+    <!-- Top Status Bar -->
+    <LinearLayout
+        android:id="@+id/statusBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#5B2E5A"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <!-- Left: Signal -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:gravity="start|center_vertical"
+            android:paddingStart="12dp">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/mobilesignal" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=" MS "
+                android:textColor="#FFFFFF"
+                android:textStyle="bold"
+                android:textSize="14sp" />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/wifi" />
+        </LinearLayout>
+
+        <!-- Center: Time -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="9:41 AM"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:textSize="16sp" />
+
+        <!-- Right: Battery -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:gravity="end|center_vertical"
+            android:paddingEnd="12dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="100% "
+                android:textColor="#FFFFFF"
+                android:textStyle="bold"
+                android:textSize="14sp" />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/battery" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Main Content -->
+    <ScrollView
+        android:layout_below="@id/statusBar"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="32dp"
+            android:paddingEnd="32dp"
+            android:paddingTop="24dp"
+            android:paddingBottom="24dp">
+
+            <!-- Top Bar -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp">
+
+                <ImageView
+                    android:id="@+id/backButton"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_alignParentStart="true"
+                    android:src="@drawable/chevronleft"
+                    />
+
+                <TextView
+                    android:id="@+id/title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Create Opportunity"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    android:textColor="#333333"
+                    android:layout_centerHorizontal="true" />
+
+                <ImageView
+                    android:id="@+id/menuIcon"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_alignParentEnd="true"
+                    android:src="@drawable/ic_menu"
+                    />
+            </RelativeLayout>
+
+            <!-- Event Name -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Event Name"
+                android:textSize="16sp"
+                android:textColor="#5B2E5A"
+                android:textStyle="bold"
+                android:layout_marginBottom="6dp" />
+
+            <EditText
+                android:id="@+id/eventNameInput"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:hint="ABC Donation Drive"
+                android:background="@drawable/input_border_purple"
+                android:textColorHint="#A0A0A0"
+                android:textColor="#000000"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Event Location -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Event Location"
+                android:textSize="16sp"
+                android:textColor="#5B2E5A"
+                android:textStyle="bold"
+                android:layout_marginBottom="6dp" />
+
+            <EditText
+                android:id="@+id/eventLocationInput"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:hint="Karachi"
+                android:background="@drawable/input_border_purple"
+                android:textColorHint="#A0A0A0"
+                android:textColor="#000000"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Choose Date -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Choose Date"
+                android:textSize="16sp"
+                android:textColor="#5B2E5A"
+                android:textStyle="bold"
+                android:layout_marginBottom="6dp" />
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:background="@drawable/input_border_purple"
+                android:layout_marginBottom="24dp">
+
+                <EditText
+                    android:id="@+id/dateInput"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:hint="23 -10 - 2025"
+                    android:textColorHint="#A0A0A0"
+                    android:textColor="#000000"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="48dp"
+                    android:clickable="true" />
+
+                <ImageView
+                    android:id="@+id/datePickerIcon"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="16dp"
+                    android:src="@drawable/date"
+                    />
+            </RelativeLayout>
+
+            <!-- Event Description -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Event Description"
+                android:textSize="16sp"
+                android:textColor="#5B2E5A"
+                android:textStyle="bold"
+                android:layout_marginBottom="6dp" />
+
+            <EditText
+                android:id="@+id/eventDescriptionInput"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:hint="items to bring / estimated time"
+                android:background="@drawable/input_border_purple"
+                android:textColorHint="#A0A0A0"
+                android:textColor="#000000"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:layout_marginBottom="16dp" />
+
+
+            <!-- Add Poster Button -->
+            <Button
+                android:id="@+id/btnAddPoster"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Add Event Poster"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:drawableRight="@drawable/event"
+                android:drawablePadding="12dp"
+                android:drawableTint="#FFFFFF"
+                android:paddingVertical="10dp"
+                android:gravity="center"
+                app:backgroundTint="@null"
+                android:background="@drawable/button_purple_background"
+                android:layout_marginBottom="16dp" />
+
+
+
+
+
+            <!-- Post Event Button -->
+            <Button
+                android:id="@+id/btnPostEvent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Post Event"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:paddingVertical="10dp"
+                app:backgroundTint="@null"
+                android:background="@drawable/button_purple_background" />
+
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- Bottom Purple Bar -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="20dp"
+        android:layout_alignParentBottom="true"
+        android:background="#5B2E5A" />
+</RelativeLayout>

@@ -5,7 +5,16 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".intro">
+
+
+    <!-- Background Image -->
+    <ImageView
+        android:id="@+id/backgroundImage"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/bgintro"
+        />
 
     <!-- Top Status Bar -->
     <LinearLayout
@@ -80,45 +89,75 @@
                 android:src="@drawable/battery" />
         </LinearLayout>
     </LinearLayout>
-
-    <!-- Main Content Area -->
-    <LinearLayout
-        android:id="@+id/division"
-        android:layout_below="@+id/statusBar"
-        android:layout_above="@+id/bottomBar"
+    <!-- Overlay for slightly dim background (optional, remove if not needed) -->
+    <View
+        android:id="@+id/dimOverlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:weightSum="2"
-        android:orientation="vertical">
+        android:background="#80000000" />
 
-        <!-- Top Section (Light Gray) -->
+    <!-- Content -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:padding="32dp"
+        android:layout_below="@id/statusBar"
+        android:layout_above="@+id/bottomBar">
+
+
         <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:background="#E7E7E7">
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent">
 
-            <!-- Dastak Logo at Bottom -->
-            <ImageView
-                android:layout_width="300dp"
+            <TextView
+
+                android:layout_centerInParent="true"
+                android:id="@+id/mainTitle"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/dastak1"
-                android:layout_alignParentBottom="true"
-                android:layout_centerHorizontal="true"
-                android:adjustViewBounds="true"
-                android:scaleType="fitEnd" />
+                android:text="A knock that brings hope."
+                android:textColor="#E0E0E0"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:fontFamily="serif"
+                android:layout_gravity="center"
+                android:layout_marginBottom="24dp" />
+
+            <!-- Description -->
+            <TextView
+                android:id="@+id/description"
+                android:layout_width="wrap_content"
+                android:layout_below="@+id/mainTitle"
+                android:layout_height="wrap_content"
+                android:text="Connect with trusted organizations.\nDiscover volunteer opportunities.\nMake your Dastak where it matters most."
+                android:textColor="#D8D8D8"
+                android:textSize="16sp"
+                android:gravity="center"
+                android:layout_marginBottom="36dp" />
+
+            <!-- Get Started Button -->
+            <Button
+                android:id="@+id/getStartedBtn"
+                android:layout_width="180dp"
+                android:layout_height="wrap_content"
+                android:text="Get Started"
+                android:layout_below="@+id/description"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:fontFamily="sans-serif-medium"
+                android:background="@drawable/button_purple_background"
+                android:layout_marginLeft="50dp"
+                app:backgroundTint="@null"
+                android:layout_marginTop="12dp"
+                android:layout_gravity="center" />
+
 
         </RelativeLayout>
+        <!-- Main Title -->
 
-        <!-- Bottom Section (Dark Purple) -->
-        <LinearLayout
-            android:background="#50264E"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:orientation="vertical">
 
-        </LinearLayout>
 
     </LinearLayout>
 
@@ -129,5 +168,4 @@
         android:layout_height="24dp"
         android:layout_alignParentBottom="true"
         android:background="#5B2E5A" />
-
 </RelativeLayout>
