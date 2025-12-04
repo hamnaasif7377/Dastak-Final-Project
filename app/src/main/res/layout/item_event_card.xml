@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="16dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp"
+    app:cardBackgroundColor="#FFFFFF">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp">
+
+        <!-- Event Details (Left Side) -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginEnd="16dp">
+
+            <!-- Event Title -->
+            <TextView
+                android:id="@+id/eventCardTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Blood Donation Drive"
+                android:textSize="18sp"
+                android:textColor="#000000"
+                android:textStyle="bold"
+                android:layout_marginBottom="4dp" />
+
+            <!-- Event Date -->
+            <TextView
+                android:id="@+id/eventCardDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="23rd June, 2025"
+                android:textSize="14sp"
+                android:textColor="#666666"
+                android:layout_marginBottom="12dp" />
+
+            <!-- Event Description -->
+            <TextView
+                android:id="@+id/eventCardDescription"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Spent the day receiving donations, packing food and hygiene kits, and loading relief trucks with the Al-Khidmat team. It was inspiring to see so many people come together to help families affected by the KPK floods."
+                android:textSize="13sp"
+                android:textColor="#5B5B5B"
+                android:lineSpacingMultiplier="1.2"
+                android:maxLines="6"
+                android:ellipsize="end" />
+        </LinearLayout>
+
+        <!-- Event Image (Right Side) -->
+        <ImageView
+            android:id="@+id/eventCardImage"
+            android:layout_width="140dp"
+            android:layout_height="140dp"
+            android:scaleType="centerCrop"
+            android:background="#E0E0E0"
+            android:contentDescription="Event Image" />
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

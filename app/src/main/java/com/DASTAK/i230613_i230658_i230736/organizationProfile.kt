@@ -41,6 +41,7 @@ class organizationProfile : AppCompatActivity() {
         menuNotifications = findViewById(R.id.menu_notifications)
         menuLogout = findViewById(R.id.menu_logout)
 
+
         // Open drawer when menu button is clicked
         btnMenu.setOnClickListener {
             drawerLayout.openDrawer(androidx.core.view.GravityCompat.START)
@@ -54,8 +55,8 @@ class organizationProfile : AppCompatActivity() {
         // My Events button
         btnMyEvents.setOnClickListener {
             // Navigate to My Events activity
-            // val intent = Intent(this, MyEventsActivity::class.java)
-            // startActivity(intent)
+            val intent = Intent(this, EventsActivity::class.java)
+            startActivity(intent)
         }
 
         // Drawer menu item click listeners
