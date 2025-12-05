@@ -96,7 +96,8 @@ class organizationProfile : AppCompatActivity() {
 
         menuNotifications.setOnClickListener {
             drawerLayout.closeDrawers()
-            // Navigate to Notifications activity
+            val intent = Intent(this, NotificationActivity::class.java)
+            startActivity(intent)
         }
 
         menuLogout.setOnClickListener {

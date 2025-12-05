@@ -17,6 +17,15 @@
         android:theme="@style/Theme.I230613_i230658_i230736"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".RegisterConfirmation"
+            android:exported="false" />
+        <activity
+            android:name=".NotificationVol"
+            android:exported="false" />
+        <activity
+            android:name=".NotificationOrg"
+            android:exported="false" />
+        <activity
             android:name=".EditProfileO"
             android:exported="false" />
         <activity
@@ -36,6 +45,9 @@
             android:exported="false" />
         <activity
             android:name=".login_o"
+            android:exported="false" />
+        <activity
+            android:name=".NotificationActivity"
             android:exported="false" />
         <activity
             android:name=".OrgHomeActivity"

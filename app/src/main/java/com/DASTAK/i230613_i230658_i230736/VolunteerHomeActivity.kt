@@ -86,7 +86,8 @@ class VolunteerHomeActivity : AppCompatActivity() {
         // Notifications
         findViewById<LinearLayout>(R.id.menu_notifications).setOnClickListener {
             drawerLayout.closeDrawer(GravityCompat.START)
-            // TODO: Open Notifications Activity
+            val intent = Intent(this, NotificationActivity::class.java)
+            startActivity(intent)
         }
 
         // My Contributions
