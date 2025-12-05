@@ -24,7 +24,6 @@
             android:paddingBottom="8dp"
             android:gravity="center_vertical">
 
-            <!-- Signal and carrier -->
             <LinearLayout
                 android:layout_marginLeft="12dp"
                 android:layout_marginRight="12dp"
@@ -53,7 +52,6 @@
                     android:src="@drawable/wifi" />
             </LinearLayout>
 
-            <!-- Time -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -62,7 +60,6 @@
                 android:textColor="#FFFFFF"
                 android:textStyle="bold" />
 
-            <!-- Battery -->
             <LinearLayout
                 android:layout_marginRight="12dp"
                 android:layout_marginLeft="12dp"
@@ -95,16 +92,14 @@
             android:background="#CECECE"
             android:layout_below="@id/statusBar">
 
-            <!-- Alkhidmat Banner Image -->
             <ImageView
                 android:id="@+id/bannerImage"
                 android:layout_width="match_parent"
                 android:layout_height="135dp"
                 android:src="@drawable/alkhidmat"
                 android:scaleType="fitCenter"
-                android:contentDescription="Alkhidmat Banner" />
+                android:contentDescription="Organization Banner" />
 
-            <!-- Back Button -->
             <ImageView
                 android:id="@+id/btnBack"
                 android:layout_width="32dp"
@@ -116,7 +111,6 @@
                 android:padding="4dp"
                 android:contentDescription="Back" />
 
-            <!-- Menu Button -->
             <ImageView
                 android:id="@+id/btnMenu"
                 android:layout_width="40dp"
@@ -177,7 +171,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
                         android:text="Rawalpindi, Punjab, Pakistan"
-                        android:textColor="#666666"
+                        android:textColor="#808080"
                         android:textStyle="bold"
                         android:textSize="10sp" />
 
@@ -220,16 +214,17 @@
                                 android:layout_marginBottom="6dp" />
 
                             <TextView
+                                android:id="@+id/operationLocationsList"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="• Khyber Pakhtunkhwa\n• Gilgit Baltistan\n• Azad Jammu &amp; Kashmir\n• Central Punjab\n• South Punjab\n• North Punjab\n• Karachi\n• Lahore"
-                                android:textColor="#333333"
+                                android:textColor="#808080"
                                 android:textSize="12sp"
                                 android:lineSpacingExtra="2dp" />
                         </LinearLayout>
                     </androidx.cardview.widget.CardView>
 
-                    <!-- Services Card -->
+                    <!-- Description Card -->
                     <androidx.cardview.widget.CardView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -246,10 +241,11 @@
                             android:padding="12dp">
 
                             <TextView
+                                android:id="@+id/organizationDescription"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Serving humanity since 1990 through disaster relief, health, education, orphan care, clean water, and community services across Pakistan. This is one of the largest NGOs of Pakistan, with thousands of active volunteers."
-                                android:textColor="#333333"
+                                android:textColor="#808080"
                                 android:textSize="12sp"
                                 android:lineSpacingExtra="2dp" />
                         </LinearLayout>
@@ -277,95 +273,20 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Alkhidmat Programs:"
+                            android:text="Organization Programs:"
                             android:textColor="#000000"
                             android:textSize="15sp"
                             android:textStyle="bold"
                             android:layout_marginBottom="8dp" />
 
-                        <!-- Orphan Care -->
                         <TextView
+                            android:id="@+id/programsList"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="• Orphan Care Program"
-                            android:textColor="#333333"
-                            android:textSize="13sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="  Supporting 30,000+ orphans across Pakistan with financial, educational, and emotional care."
-                            android:textColor="#666666"
+                            android:text="• Orphan Care Program\n• Education Program\n• Community Services"
+                            android:textColor="#808080"
                             android:textSize="12sp"
-                            android:layout_marginBottom="6dp" />
-
-                        <!-- Education -->
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="• Education Program"
-                            android:textColor="#333333"
-                            android:textSize="13sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="  Providing scholarships and learning opportunities to underprivileged students nationwide."
-                            android:textColor="#666666"
-                            android:textSize="12sp"
-                            android:layout_marginBottom="6dp" />
-
-                        <!-- Bano Qabil -->
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="• Bano Qabil"
-                            android:textColor="#333333"
-                            android:textSize="13sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="  A modern IT training initiative equipping youth with digital and job-ready skills."
-                            android:textColor="#666666"
-                            android:textSize="12sp"
-                            android:layout_marginBottom="6dp" />
-
-                        <!-- Community Services -->
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="• Community Services"
-                            android:textColor="#333333"
-                            android:textSize="13sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="  Delivering gifts, food drives, medical camps, and seasonal support for vulnerable families."
-                            android:textColor="#666666"
-                            android:textSize="12sp"
-                            android:layout_marginBottom="6dp" />
-
-                        <!-- Disaster Management -->
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="• Disaster Management"
-                            android:textColor="#333333"
-                            android:textSize="13sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="  Always first to arrive, last to leave, providing relief in floods, earthquakes, and emergencies."
-                            android:textColor="#666666"
-                            android:textSize="12sp" />
+                            android:lineSpacingExtra="4dp" />
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 
@@ -396,7 +317,7 @@
 
     </RelativeLayout>
 
-    <!-- Navigation Drawer -->
+    <!-- Navigation Drawer (same as before) -->
     <LinearLayout
         android:id="@+id/nav_view"
         android:layout_width="260dp"
@@ -408,7 +329,6 @@
         android:paddingStart="24dp"
         android:paddingEnd="16dp">
 
-        <!-- Home Menu Item -->
         <LinearLayout
             android:id="@+id/menu_home"
             android:layout_width="match_parent"
@@ -434,7 +354,6 @@
                 android:textSize="18sp" />
         </LinearLayout>
 
-        <!-- Edit Profile Menu Item -->
         <LinearLayout
             android:id="@+id/menu_edit_profile"
             android:layout_width="match_parent"
@@ -460,7 +379,6 @@
                 android:textSize="18sp" />
         </LinearLayout>
 
-        <!-- Create Opportunity Menu Item -->
         <LinearLayout
             android:id="@+id/menu_create_opportunity"
             android:layout_width="match_parent"
@@ -486,7 +404,6 @@
                 android:textSize="18sp" />
         </LinearLayout>
 
-        <!-- Notifications Menu Item -->
         <LinearLayout
             android:id="@+id/menu_notifications"
             android:layout_width="match_parent"
@@ -512,7 +429,6 @@
                 android:textSize="18sp" />
         </LinearLayout>
 
-        <!-- Log Out Menu Item -->
         <LinearLayout
             android:id="@+id/menu_logout"
             android:layout_width="match_parent"
