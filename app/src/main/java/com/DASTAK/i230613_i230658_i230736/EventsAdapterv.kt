@@ -1,5 +1,6 @@
 package com.DASTAK.i230613_i230658_i230736
 
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -56,6 +57,7 @@ class EventsAdapterv(
 
         // View Details button listener
         holder.btnViewDetails.setOnClickListener {
+
             onEventClick(event)
         }
 

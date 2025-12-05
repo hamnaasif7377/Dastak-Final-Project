@@ -1,48 +1,29 @@
 package com.DASTAK.i230613_i230658_i230736
 
-import android.app.DatePickerDialog
 import android.app.ProgressDialog
+import android.content.Intent
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.util.Log
-import android.widget.EditText
 import android.widget.ImageView
-import android.widget.LinearLayout
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import okhttp3.*
 import org.json.JSONObject
 import java.io.IOException
-import java.text.SimpleDateFormat
-import java.util.*
 
 class BrowseActivitiesActivity : AppCompatActivity() {
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var btnBack: ImageView
-    private lateinit var btnMenu: ImageView
-    private lateinit var searchInput: EditText
-    private lateinit var btnFilterDate: LinearLayout
-    private lateinit var btnFilterOrganization: LinearLayout
-    private lateinit var btnFilterLocation: LinearLayout
-
     private lateinit var activitiesAdapter: EventsAdapterv
     private lateinit var progressDialog: ProgressDialog
 
     private val client = OkHttpClient()
+
+    // Your server URL
     private val API_BASE_URL = Constants.BASE_URL
-
-    // Store all events for filtering
-    private var allEvents = mutableListOf<Event>()
-
-    // Filter values
-    private var selectedDate: String? = null
-    private var selectedOrganization: String? = null
-    private var selectedLocation: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,19 +31,12 @@ class BrowseActivitiesActivity : AppCompatActivity() {
 
         initializeViews()
         setupRecyclerView()
-        setupSearchBar()
-        setupFilters()
         loadAllActivities()
     }
 
     private fun initializeViews() {
         recyclerView = findViewById(R.id.recyclerViewActivities)
         btnBack = findViewById(R.id.btnBack)
-        btnMenu = findViewById(R.id.btnMenu)
-        searchInput = findViewById(R.id.searchInput)
-        btnFilterDate = findViewById(R.id.btnFilterDate)
-        btnFilterOrganization = findViewById(R.id.btnFilterOrganization)
-        btnFilterLocation = findViewById(R.id.btnFilterLocation)
 
         progressDialog = ProgressDialog(this)
         progressDialog.setMessage("Loading activities...")
@@ -72,22 +46,16 @@ class BrowseActivitiesActivity : AppCompatActivity() {
         btnBack.setOnClickListener {
             finish()
         }
-
-        // Menu button
-        btnMenu.setOnClickListener {
-            // TODO: Open menu/drawer
-            Toast.makeText(this, "Menu clicked", Toast.LENGTH_SHORT).show()
-        }
     }
 
     private fun setupRecyclerView() {
         activitiesAdapter = EventsAdapterv(mutableListOf()) { event ->
             // Handle event click - open event details
             Toast.makeText(this, "Clicked: ${event.event_name}", Toast.LENGTH_SHORT).show()
-            // TODO: Open event details activity
-            // val intent = Intent(this, EventDetailsActivity::class.java)
-            // intent.putExtra("event_id", event.event_id)
-            // startActivity(intent)
+            // TODO: Open event details activity where volunteer can register
+             val intent = Intent(this, OpportunityDetailActivity::class.java)
+             intent.putExtra("event_id", event.event_id)
+             startActivity(intent)
         }
 
         recyclerView.apply {
@@ -96,152 +64,10 @@ class BrowseActivitiesActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupSearchBar() {
-        searchInput.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-
-            override fun afterTextChanged(s: Editable?) {
-                val query = s.toString().trim()
-                filterEvents(query)
-            }
-        })
-    }
-
-    private fun setupFilters() {
-        // Date Filter
-        btnFilterDate.setOnClickListener {
-            showDatePicker()
-        }
-
-        // Organization Filter
-        btnFilterOrganization.setOnClickListener {
-            showOrganizationFilter()
-        }
-
-        // Location Filter
-        btnFilterLocation.setOnClickListener {
-            showLocationFilter()
-        }
-    }
-
-    private fun showDatePicker() {
-        val calendar = Calendar.getInstance()
-        val datePickerDialog = DatePickerDialog(
-            this,
-            { _, year, month, dayOfMonth ->
-                calendar.set(year, month, dayOfMonth)
-                val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-                selectedDate = dateFormat.format(calendar.time)
-                applyFilters()
-                Toast.makeText(this, "Filtered by date: $selectedDate", Toast.LENGTH_SHORT).show()
-            },
-            calendar.get(Calendar.YEAR),
-            calendar.get(Calendar.MONTH),
-            calendar.get(Calendar.DAY_OF_MONTH)
-        )
-        datePickerDialog.show()
-    }
-
-    private fun showOrganizationFilter() {
-        // Get unique organizations from all events
-        val organizations = allEvents.map { it.organizer.name }.distinct().toTypedArray()
-
-        if (organizations.isEmpty()) {
-            Toast.makeText(this, "No organizations available", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        AlertDialog.Builder(this)
-            .setTitle("Filter by Organization")
-            .setItems(organizations) { _, which ->
-                selectedOrganization = organizations[which]
-                applyFilters()
-                Toast.makeText(this, "Filtered by: $selectedOrganization", Toast.LENGTH_SHORT).show()
-            }
-            .setNeutralButton("Clear Filter") { _, _ ->
-                selectedOrganization = null
-                applyFilters()
-            }
-            .show()
-    }
-
-    private fun showLocationFilter() {
-        // Get unique locations from all events
-        val locations = allEvents.map { it.event_location }.distinct().toTypedArray()
-
-        if (locations.isEmpty()) {
-            Toast.makeText(this, "No locations available", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        AlertDialog.Builder(this)
-            .setTitle("Filter by Location")
-            .setItems(locations) { _, which ->
-                selectedLocation = locations[which]
-                applyFilters()
-                Toast.makeText(this, "Filtered by: $selectedLocation", Toast.LENGTH_SHORT).show()
-            }
-            .setNeutralButton("Clear Filter") { _, _ ->
-                selectedLocation = null
-                applyFilters()
-            }
-            .show()
-    }
-
-    private fun filterEvents(searchQuery: String) {
-        // Start with all events and apply search
-        var searchFiltered = if (searchQuery.isEmpty()) {
-            allEvents
-        } else {
-            allEvents.filter {
-                it.event_name.contains(searchQuery, ignoreCase = true) ||
-                        it.event_location.contains(searchQuery, ignoreCase = true) ||
-                        it.organizer.name.contains(searchQuery, ignoreCase = true) ||
-                        it.event_description.contains(searchQuery, ignoreCase = true)
-            }
-        }
-
-        // Now apply other filters on top of search results
-        applyFiltersOnList(searchFiltered)
-    }
-
-    private fun applyFilters() {
-        // Apply filters without search (used when filters are clicked directly)
-        val searchQuery = searchInput.text.toString().trim()
-        filterEvents(searchQuery)
-    }
-
-    private fun applyFiltersOnList(events: List<Event>) {
-        var filtered = events.toMutableList()
-
-        // Apply date filter
-        if (selectedDate != null) {
-            filtered = filtered.filter { it.event_date == selectedDate }.toMutableList()
-        }
-
-        // Apply organization filter
-        if (selectedOrganization != null) {
-            filtered = filtered.filter { it.organizer.name == selectedOrganization }.toMutableList()
-        }
-
-        // Apply location filter
-        if (selectedLocation != null) {
-            filtered = filtered.filter { it.event_location == selectedLocation }.toMutableList()
-        }
-
-        // Update the adapter with filtered results
-        activitiesAdapter.updateEvents(filtered)
-
-        if (filtered.isEmpty()) {
-            Toast.makeText(this, "No activities match your filters", Toast.LENGTH_SHORT).show()
-        }
-    }
-
     private fun loadAllActivities() {
         progressDialog.show()
 
-        // Get ALL upcoming events
+        // Get ALL upcoming events (no user_id filter, status=upcoming)
         val url = "${API_BASE_URL}getevents.php?status=upcoming&limit=100"
 
         val request = Request.Builder()
@@ -296,9 +122,14 @@ class BrowseActivitiesActivity : AppCompatActivity() {
                                     event_name = eventObj.getString("event_name"),
                                     event_location = eventObj.getString("event_location"),
                                     event_date = eventObj.getString("event_date"),
+                                    event_time = if (eventObj.isNull("event_time")) null else eventObj.getString("event_time"),
                                     event_description = eventObj.getString("event_description"),
                                     poster_image = if (eventObj.isNull("poster_image")) null
                                     else eventObj.getString("poster_image"),
+                                    volunteer_tasks = if (eventObj.isNull("volunteer_tasks")) null else eventObj.getString("volunteer_tasks"),
+                                    things_to_bring = if (eventObj.isNull("things_to_bring")) null else eventObj.getString("things_to_bring"),
+                                    meeting_point = if (eventObj.isNull("meeting_point")) null else eventObj.getString("meeting_point"),
+                                    contact_info = if (eventObj.isNull("contact_info")) null else eventObj.getString("contact_info"),
                                     status = eventObj.getString("status"),
                                     participant_count = eventObj.getInt("participant_count"),
                                     created_at = eventObj.getString("created_at"),
@@ -313,10 +144,7 @@ class BrowseActivitiesActivity : AppCompatActivity() {
                                 eventsList.add(event)
                             }
 
-                            allEvents.clear()
-                            allEvents.addAll(eventsList)
-
-                            activitiesAdapter.updateEvents(allEvents)
+                            activitiesAdapter.updateEvents(eventsList)
 
                             if (eventsList.isEmpty()) {
                                 Toast.makeText(
@@ -334,11 +162,7 @@ class BrowseActivitiesActivity : AppCompatActivity() {
 
                         } else {
                             val message = jsonResponse.optString("message", "Failed to load activities")
-                            Toast.makeText(
-                                this@BrowseActivitiesActivity,
-                                message,
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            Toast.makeText(this@BrowseActivitiesActivity, message, Toast.LENGTH_SHORT).show()
                         }
 
                     } catch (e: Exception) {

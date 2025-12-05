@@ -17,7 +17,7 @@
         android:theme="@style/Theme.I230613_i230658_i230736"
         android:usesCleartextTraffic="true">
         <activity
-            android:name=".OpportunityDetail"
+            android:name=".OpportunityDetailActivity"
             android:exported="false" />
         <activity
             android:name=".BrowseActivitiesActivity"
