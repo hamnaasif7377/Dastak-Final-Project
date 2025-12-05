@@ -1,27 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/backlog"
     tools:context=".RoleActivity">
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="volunteer"
-        android:id="@+id/volunteer">
-
-    </Button>
 
     <Button
-        android:layout_width="wrap_content"
+        android:id="@+id/org"
+        android:layout_width="300dp"
         android:layout_height="wrap_content"
-        android:text="organization"
-        android:id="@+id/org">
+        android:layout_gravity="center"
+        android:text="Organization"
+        android:textSize="24sp"
+        android:layout_centerHorizontal="true"
+        android:textColor="@color/black"
+        app:backgroundTint="@null"
+        android:background="@drawable/graybutton"
+        android:layout_marginTop="450dp"
+        android:paddingStart="56dp"
+        android:paddingEnd="56dp" />
+    <Button
+        android:id="@+id/volunteer"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="Volunteer"
+        android:textSize="24sp"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true"
+        android:textColor="@color/black"
+        app:backgroundTint="@null"
+        android:layout_below="@+id/org"
+        android:layout_marginTop="25dp"
+        android:background="@drawable/graybutton"
+        android:paddingStart="56dp"
+        android:paddingEnd="56dp" />
 
-    </Button>
-
-</LinearLayout>
+</RelativeLayout>
