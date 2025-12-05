@@ -38,7 +38,6 @@ class BrowseActivitiesActivity : AppCompatActivity() {
 
     // Store all events for filtering
     private var allEvents = mutableListOf<Event>()
-    private var filteredEvents = mutableListOf<Event>()
 
     // Filter values
     private var selectedDate: String? = null
@@ -191,42 +190,47 @@ class BrowseActivitiesActivity : AppCompatActivity() {
     }
 
     private fun filterEvents(searchQuery: String) {
-        filteredEvents.clear()
-
-        if (searchQuery.isEmpty()) {
-            filteredEvents.addAll(allEvents)
+        // Start with all events and apply search
+        var searchFiltered = if (searchQuery.isEmpty()) {
+            allEvents
         } else {
-            filteredEvents.addAll(
-                allEvents.filter {
-                    it.event_name.contains(searchQuery, ignoreCase = true) ||
-                            it.event_location.contains(searchQuery, ignoreCase = true) ||
-                            it.organizer.name.contains(searchQuery, ignoreCase = true) ||
-                            it.event_description.contains(searchQuery, ignoreCase = true)
-                }
-            )
+            allEvents.filter {
+                it.event_name.contains(searchQuery, ignoreCase = true) ||
+                        it.event_location.contains(searchQuery, ignoreCase = true) ||
+                        it.organizer.name.contains(searchQuery, ignoreCase = true) ||
+                        it.event_description.contains(searchQuery, ignoreCase = true)
+            }
         }
 
-        applyFilters()
+        // Now apply other filters on top of search results
+        applyFiltersOnList(searchFiltered)
     }
 
     private fun applyFilters() {
-        var filtered = if (filteredEvents.isEmpty()) allEvents else filteredEvents
+        // Apply filters without search (used when filters are clicked directly)
+        val searchQuery = searchInput.text.toString().trim()
+        filterEvents(searchQuery)
+    }
+
+    private fun applyFiltersOnList(events: List<Event>) {
+        var filtered = events.toMutableList()
 
         // Apply date filter
         if (selectedDate != null) {
-            //filtered = filtered.filter { it.event_date == selectedDate }
+            filtered = filtered.filter { it.event_date == selectedDate }.toMutableList()
         }
 
         // Apply organization filter
         if (selectedOrganization != null) {
-            //filtered = filtered.filter { it.organizer.name == selectedOrganization }
+            filtered = filtered.filter { it.organizer.name == selectedOrganization }.toMutableList()
         }
 
         // Apply location filter
         if (selectedLocation != null) {
-           // filtered = filtered.filter { it.event_location == selectedLocation }
+            filtered = filtered.filter { it.event_location == selectedLocation }.toMutableList()
         }
 
+        // Update the adapter with filtered results
         activitiesAdapter.updateEvents(filtered)
 
         if (filtered.isEmpty()) {
@@ -311,10 +315,8 @@ class BrowseActivitiesActivity : AppCompatActivity() {
 
                             allEvents.clear()
                             allEvents.addAll(eventsList)
-                            filteredEvents.clear()
-                            filteredEvents.addAll(eventsList)
 
-                            activitiesAdapter.updateEvents(filteredEvents)
+                            activitiesAdapter.updateEvents(allEvents)
 
                             if (eventsList.isEmpty()) {
                                 Toast.makeText(

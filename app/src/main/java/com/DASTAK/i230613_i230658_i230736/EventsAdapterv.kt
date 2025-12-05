@@ -8,7 +8,6 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.DASTAK.i230613_i230658_i230736.R
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import java.text.SimpleDateFormat
 import java.util.*
@@ -41,24 +40,26 @@ class EventsAdapterv(
         holder.eventOrganization.text = event.organizer.name
         holder.eventDate.text = formatDate(event.event_date)
 
-        // Load event image using Glide
+        // ✅ FIXED: Use the same URL construction as EventsAdapter
         if (!event.poster_image.isNullOrEmpty()) {
+            val imageUrl = Constants.BASE_URL + event.poster_image
+
             Glide.with(holder.itemView.context)
-                .load(event.poster_image)
-                .placeholder(R.drawable.alkhidmat) // Use your placeholder
-                .error(R.drawable.alkhidmat)
-                .centerCrop()
+                .load(imageUrl)
+                .placeholder(R.drawable.ic_menu)
+                .error(R.drawable.ic_menu)
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .into(holder.eventImage)
         } else {
-            holder.eventImage.setImageResource(R.drawable.alkhidmat)
+            holder.eventImage.setImageResource(R.drawable.ic_menu)
         }
 
-        // Click listener for View Details button
+        // View Details button listener
         holder.btnViewDetails.setOnClickListener {
             onEventClick(event)
         }
 
-        // Optional: Make entire card clickable
+        // Entire card click
         holder.itemView.setOnClickListener {
             onEventClick(event)
         }
