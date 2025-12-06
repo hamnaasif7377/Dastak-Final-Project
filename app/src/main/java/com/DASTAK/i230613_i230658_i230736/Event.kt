@@ -21,5 +21,6 @@ data class Event(
 data class Organizer(
     val user_id: Int,
     val name: String,
-    val profile_image: String?
+    val profile_image: String?,
+    val email: String? = null
 )

@@ -94,11 +94,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-
             android:paddingTop="10dp"
             android:paddingBottom="10dp">
 
-            <!-- Header with Back Button, Title, and Menu -->
+            <!-- Header with Back Button, Title, Menu, and Favorite -->
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -124,6 +123,18 @@
                     android:textSize="20sp"
                     android:textColor="#2B2B2B"
                     android:textStyle="bold" />
+
+                <!-- Favorite Button -->
+                <ImageView
+                    android:id="@+id/btnFavorite"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_toStartOf="@id/btnMenu"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="12dp"
+                    android:src="@drawable/ic_favorite_border"
+                    android:padding="4dp"
+                    android:contentDescription="Save to favorites" />
 
                 <ImageView
                     android:id="@+id/btnMenu"
@@ -167,7 +178,6 @@
 
                     <!-- Event Details -->
                     <LinearLayout
-
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"

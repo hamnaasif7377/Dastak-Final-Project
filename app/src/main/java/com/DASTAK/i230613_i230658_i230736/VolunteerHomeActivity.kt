@@ -49,16 +49,12 @@ class VolunteerHomeActivity : AppCompatActivity() {
 
         // Saved Activities Button
         findViewById<Button>(R.id.btnSavedActivities).setOnClickListener {
-            // TODO: Open Saved Activities Activity
-            // val intent = Intent(this, SavedActivitiesActivity::class.java)
-            // startActivity(intent)
+            val intent = Intent(this, SavedEvents::class.java)
+            startActivity(intent)
         }
     }
 
     private fun setupDrawerMenu() {
-        val navView = findViewById<LinearLayout>(R.id.nav_view)
-
-        // Home - Close drawer (already on home)
         findViewById<LinearLayout>(R.id.menu_home).setOnClickListener {
             drawerLayout.closeDrawer(GravityCompat.START)
         }
@@ -67,8 +63,6 @@ class VolunteerHomeActivity : AppCompatActivity() {
         findViewById<LinearLayout>(R.id.menu_edit_profile).setOnClickListener {
             drawerLayout.closeDrawer(GravityCompat.START)
             // TODO: Open Edit Profile Activity
-            // val intent = Intent(this, EditProfileActivity::class.java)
-            // startActivity(intent)
         }
 
         // Browse Activities
@@ -77,10 +71,11 @@ class VolunteerHomeActivity : AppCompatActivity() {
             openBrowseActivities()
         }
 
-        // Saved
+        // Saved Events
         findViewById<LinearLayout>(R.id.menu_saved).setOnClickListener {
             drawerLayout.closeDrawer(GravityCompat.START)
-            // TODO: Open Saved Activities
+            val intent = Intent(this, SavedEvents::class.java)
+            startActivity(intent)
         }
 
         // Notifications
@@ -110,7 +105,7 @@ class VolunteerHomeActivity : AppCompatActivity() {
     private fun logoutUser() {
         val sharedPref = getSharedPreferences("userPrefs", Context.MODE_PRIVATE)
         with(sharedPref.edit()) {
-            clear() // Clear all data
+            clear()
             apply()
         }
 

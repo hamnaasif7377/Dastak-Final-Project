@@ -14,6 +14,8 @@ import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.asRequestBody
@@ -42,13 +44,15 @@ class createOpportunityorg : AppCompatActivity() {
     private var posterImageUri: Uri? = null
     private var posterImageFile: File? = null
 
+    private var isEditMode = false
+    private var editEventId: Int = -1
+    private var existingPosterImage: String? = null
+
     private val client = OkHttpClient()
     private lateinit var progressDialog: ProgressDialog
 
-    // Your API base URL - CHANGE THIS TO YOUR SERVER
     private val API_BASE_URL = Constants.BASE_URL
 
-    // Image picker launcher
     private val imagePickerLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -66,7 +70,6 @@ class createOpportunityorg : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_create_opportunityorg)
 
-        // Get user info from SharedPreferences
         sharedPreferences = getSharedPreferences("userPrefs", MODE_PRIVATE)
         userId = sharedPreferences.getInt("user_id", -1)
 
@@ -76,10 +79,174 @@ class createOpportunityorg : AppCompatActivity() {
             return
         }
 
+        val mode = intent.getStringExtra("MODE")
+        if (mode == "EDIT") {
+            isEditMode = true
+            editEventId = intent.getIntExtra("event_id", -1)
+        }
+
         initializeViews()
+
+        if (isEditMode) {
+            loadEventDataForEdit()
+        }
+
         setupListeners()
     }
 
+
+    private fun loadEventDataForEdit() {
+        supportActionBar?.title = "Edit Event"
+
+        // Get data from intent
+        val eventName = intent.getStringExtra("event_name")
+        val eventLocation = intent.getStringExtra("event_location")
+        val eventDate = intent.getStringExtra("event_date") // Format: yyyy-MM-dd
+        val eventDescription = intent.getStringExtra("event_description")
+        existingPosterImage = intent.getStringExtra("poster_image")
+
+        // Pre-fill form fields
+        eventNameInput.setText(eventName)
+        eventLocationInput.setText(eventLocation)
+        eventDescriptionInput.setText(eventDescription)
+
+        // Convert date from MySQL format to display format
+        eventDate?.let {
+            try {
+                val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                val outputFormat = SimpleDateFormat("dd - MM - yyyy", Locale.getDefault())
+                val date = inputFormat.parse(it)
+                dateInput.setText(outputFormat.format(date ?: Date()))
+            } catch (e: Exception) {
+                dateInput.setText(it) // Fallback to original format
+            }
+        }
+
+        // Load existing poster image
+        existingPosterImage?.let { posterPath ->
+            val imageUrl = Constants.BASE_URL + posterPath
+            Glide.with(this)
+                .asBitmap()
+                .load(imageUrl)
+                .placeholder(R.drawable.ic_menu)
+                .error(R.drawable.ic_menu)
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .into(object : com.bumptech.glide.request.target.CustomTarget<android.graphics.Bitmap>() {
+                    override fun onResourceReady(
+                        resource: android.graphics.Bitmap,
+                        transition: com.bumptech.glide.request.transition.Transition<in android.graphics.Bitmap>?
+                    ) {
+                        btnAddPoster.background = android.graphics.drawable.BitmapDrawable(resources, resource)
+                        btnAddPoster.text = "Poster Added ✓"
+                    }
+
+                    override fun onLoadCleared(placeholder: android.graphics.drawable.Drawable?) {
+                        // Optional
+                    }
+                })
+        }
+
+        btnPostEvent.text = "Update Event"
+    }
+    private fun updateEvent() {
+        val eventName = eventNameInput.text.toString().trim()
+        val eventLocation = eventLocationInput.text.toString().trim()
+        val eventDate = dateInput.text.toString().trim()
+        val eventDescription = eventDescriptionInput.text.toString().trim()
+
+        if (eventName.isEmpty() || eventLocation.isEmpty() ||
+            eventDate.isEmpty() || eventDescription.isEmpty()) {
+            Toast.makeText(this, "Please fill all required fields", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        progressDialog.setMessage("Updating event...")
+        progressDialog.show()
+
+        val url = "${Constants.BASE_URL}updateevent.php"
+
+        // Convert date to MySQL format before sending
+        val mysqlDate = convertDateToMySQLFormat(eventDate)
+
+        val formBodyBuilder = FormBody.Builder()
+            .add("event_id", editEventId.toString())
+            .add("user_id", userId.toString())
+            .add("event_name", eventName)
+            .add("event_location", eventLocation)
+            .add("event_date", mysqlDate) // Use converted date
+            .add("event_description", eventDescription)
+
+        if (posterImageUri == null && !existingPosterImage.isNullOrEmpty()) {
+            formBodyBuilder.add("existing_poster_image", existingPosterImage!!)
+        }
+
+        val formBody = formBodyBuilder.build()
+
+        val request = Request.Builder()
+            .url(url)
+            .post(formBody)
+            .build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                runOnUiThread {
+                    progressDialog.dismiss()
+                    Toast.makeText(
+                        this@createOpportunityorg,
+                        "Network error: ${e.message}",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    Log.e("UpdateEvent", "Network error", e)
+                }
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                val responseBody = response.body?.string()
+
+                runOnUiThread {
+                    progressDialog.dismiss()
+
+                    try {
+                        if (!responseBody.isNullOrEmpty()) {
+                            Log.d("UpdateEvent", "Response: $responseBody")
+
+                            // Check if response is HTML/XML error instead of JSON
+                            if (responseBody.trim().startsWith("<")) {
+                                Toast.makeText(
+                                    this@createOpportunityorg,
+                                    "Server error - check PHP logs. Response starts with: ${responseBody.take(100)}",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                                Log.e("UpdateEvent", "Non-JSON response: $responseBody")
+                                return@runOnUiThread
+                            }
+
+                            val jsonResponse = JSONObject(responseBody)
+                            val status = jsonResponse.getString("status")
+                            val message = jsonResponse.getString("message")
+
+                            Toast.makeText(this@createOpportunityorg, message, Toast.LENGTH_LONG).show()
+
+                            if (status == "success") {
+                                setResult(RESULT_OK)
+                                finish()
+                            }
+                        } else {
+                            Toast.makeText(this@createOpportunityorg, "Empty response", Toast.LENGTH_SHORT).show()
+                        }
+                    } catch (e: Exception) {
+                        Toast.makeText(
+                            this@createOpportunityorg,
+                            "Error: ${e.message}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        Log.e("UpdateEvent", "Parse error", e)
+                        Log.e("UpdateEvent", "Response was: $responseBody")
+                    }
+                }
+            }
+        })
+    }
     private fun initializeViews() {
         eventNameInput = findViewById(R.id.eventNameInput)
         eventLocationInput = findViewById(R.id.eventLocationInput)
@@ -94,7 +261,6 @@ class createOpportunityorg : AppCompatActivity() {
         progressDialog.setMessage("Posting event...")
         progressDialog.setCancelable(false)
 
-        // Make date input non-editable (only through picker)
         dateInput.isFocusable = false
         dateInput.isClickable = true
     }
@@ -106,7 +272,13 @@ class createOpportunityorg : AppCompatActivity() {
         datePickerIcon.setOnClickListener { showDatePicker() }
 
         btnAddPoster.setOnClickListener { openImagePicker() }
-        btnPostEvent.setOnClickListener { validateAndPostEvent() }
+        btnPostEvent.setOnClickListener {
+            if (isEditMode) {
+                updateEvent()
+            } else {
+                validateAndPostEvent()
+            }
+        }
     }
 
     private fun showDatePicker() {
@@ -190,15 +362,17 @@ class createOpportunityorg : AppCompatActivity() {
     private fun postEventToServer(name: String, location: String, date: String, description: String) {
         progressDialog.show()
 
+        // Convert date to MySQL format
+        val mysqlDate = convertDateToMySQLFormat(date)
+
         val requestBody = MultipartBody.Builder()
             .setType(MultipartBody.FORM)
             .addFormDataPart("user_id", userId.toString())
             .addFormDataPart("event_name", name)
             .addFormDataPart("event_location", location)
-            .addFormDataPart("event_date", date)
+            .addFormDataPart("event_date", mysqlDate) // Use converted date
             .addFormDataPart("event_description", description)
 
-        // Add poster image if selected
         posterImageFile?.let { file ->
             val mediaType = "image/jpeg".toMediaTypeOrNull()
             requestBody.addFormDataPart(
@@ -231,16 +405,13 @@ class createOpportunityorg : AppCompatActivity() {
 
                 runOnUiThread {
                     progressDialog.dismiss()
-
-                    // Debug: Log the raw response
                     Log.d("CreateOpportunity", "Raw Response: $responseBody")
 
                     try {
-                        // Check if response is actually JSON
                         if (responseBody == null || responseBody.trim().startsWith("<")) {
                             Toast.makeText(
                                 this@createOpportunityorg,
-                                "Server error - check PHP file and logs. Response starts with: ${responseBody?.take(100)}",
+                                "Server error - check PHP file. Response: ${responseBody?.take(50)}",
                                 Toast.LENGTH_LONG
                             ).show()
                             Log.e("CreateOpportunity", "Non-JSON response: $responseBody")
@@ -258,10 +429,7 @@ class createOpportunityorg : AppCompatActivity() {
                                 Toast.LENGTH_LONG
                             ).show()
 
-                            // Clean up temp file
                             posterImageFile?.delete()
-
-                            // Return to previous activity
                             setResult(RESULT_OK)
                             finish()
                         } else {
@@ -274,7 +442,7 @@ class createOpportunityorg : AppCompatActivity() {
                     } catch (e: Exception) {
                         Toast.makeText(
                             this@createOpportunityorg,
-                            "Parse Error: ${e.message}\nCheck logcat for details",
+                            "Parse Error: ${e.message}",
                             Toast.LENGTH_LONG
                         ).show()
                         Log.e("CreateOpportunity", "Parse error", e)
@@ -287,7 +455,23 @@ class createOpportunityorg : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        // Clean up temp file if exists
         posterImageFile?.delete()
     }
+
+    // Add this method to fix the date format before sending to server
+    private fun convertDateToMySQLFormat(dateString: String): String {
+        return try {
+            // Input format: "dd - MM - yyyy" (e.g., "06 - 12 - 2025")
+            val inputFormat = SimpleDateFormat("dd - MM - yyyy", Locale.getDefault())
+            // Output format: "yyyy-MM-dd" (MySQL format)
+            val outputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+
+            val date = inputFormat.parse(dateString)
+            outputFormat.format(date ?: Date())
+        } catch (e: Exception) {
+            Log.e("DateConversion", "Error converting date: $dateString", e)
+            dateString // Return original if conversion fails
+        }
+    }
+
 }

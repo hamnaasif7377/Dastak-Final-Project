@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="16dp"
+    android:layout_marginTop="4dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="5dp"
+    android:background="#FFFFFF"
+    android:foreground="?android:attr/selectableItemBackground">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="12dp">
+
+        <!-- Event Image -->
+        <ImageView
+            android:id="@+id/eventImage"
+            android:layout_width="100dp"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:background="#E0E0E0"
+            android:layout_marginEnd="12dp"
+            android:contentDescription="Event Image" />
+
+        <!-- Right Side: Event Details and Buttons -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center_vertical">
+
+            <!-- Event Title -->
+            <TextView
+                android:id="@+id/eventTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Flood Donation Drive"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:textColor="#2B2B2B"
+                android:layout_marginBottom="4dp" />
+
+            <!-- Location -->
+            <TextView
+                android:id="@+id/eventLocation"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="KPK"
+                android:textColor="#555555"
+                android:textSize="14sp"
+                android:layout_marginBottom="2dp" />
+
+            <!-- Organization -->
+            <TextView
+                android:id="@+id/eventOrganization"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Al-Khidmat Foundation"
+                android:textColor="#555555"
+                android:textSize="14sp"
+                android:layout_marginBottom="2dp" />
+
+            <!-- Date -->
+            <TextView
+                android:id="@+id/eventDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="5th Oct 2025"
+                android:textColor="#555555"
+                android:textSize="14sp"
+                android:layout_marginBottom="8dp" />
+
+            <!-- Buttons Row -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_gravity="end">
+
+                <Button
+                    android:layout_margin="3dp"
+                    android:id="@+id/btnJoin"
+                    android:layout_width="110dp"
+                    android:layout_height="36dp"
+                    android:text="Join"
+                    android:textSize="14sp"
+                    android:textAllCaps="false"
+                    android:textColor="#FFFFFF"
+                    android:background="@drawable/button_purple_background"
+                    android:layout_marginEnd="8dp"
+                    android:paddingHorizontal="20dp" />
+
+                <Button
+                    android:layout_margin="3dp"
+                    android:id="@+id/btnRemove"
+                    android:layout_width="110dp"
+                    android:layout_height="36dp"
+                    android:text="Remove"
+                    android:textSize="14sp"
+                    android:textAllCaps="false"
+                    android:textColor="#FFFFFF"
+                    android:background="@drawable/button_purple_background"
+                    android:paddingHorizontal="20dp" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

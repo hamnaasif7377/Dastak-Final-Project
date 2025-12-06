@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:allowBackup="true"
@@ -16,6 +17,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.I230613_i230658_i230736"
         android:usesCleartextTraffic="true">
+        <activity
+            android:name=".SavedEvents"
+            android:exported="false" />
         <activity
             android:name=".item_volunteer_registration"
             android:exported="false" />
@@ -77,8 +81,8 @@
             android:name=".login_v"
             android:exported="false" />
         <activity
-        android:name=".VolunteerListActivity"
-        android:exported="false" />
+            android:name=".VolunteerListActivity"
+            android:exported="false" />
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -88,6 +92,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <receiver
+            android:name=".NetworkStateReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

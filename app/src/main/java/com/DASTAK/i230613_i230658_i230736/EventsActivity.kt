@@ -8,6 +8,7 @@ import android.util.Log
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -20,20 +21,20 @@ class EventsActivity : AppCompatActivity() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var btnAddEvents: Button
     private lateinit var btnBack: ImageView
-    private lateinit var eventsAdapter: EventsAdapter
+    private lateinit var btnMenu: ImageView
+    private lateinit var eventsAdapter: EventsAdapterOrg
     private lateinit var progressDialog: ProgressDialog
 
     private val client = OkHttpClient()
     private var userId: Int = -1
 
-    // Your server URL
     private val API_BASE_URL = Constants.BASE_URL
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_events)
 
-        // Get user ID from SharedPreferences
+        // Load user ID
         val sharedPref = getSharedPreferences("userPrefs", Context.MODE_PRIVATE)
         userId = sharedPref.getInt("user_id", -1)
 
@@ -52,17 +53,18 @@ class EventsActivity : AppCompatActivity() {
         recyclerView = findViewById(R.id.recyclerViewEvents)
         btnAddEvents = findViewById(R.id.btnAddEvents)
         btnBack = findViewById(R.id.btnBack)
+        btnMenu = findViewById(R.id.btnMenu)
 
         progressDialog = ProgressDialog(this)
         progressDialog.setMessage("Loading events...")
         progressDialog.setCancelable(false)
 
-        // Back button
-        btnBack.setOnClickListener {
-            finish()
+        btnBack.setOnClickListener { finish() }
+
+        btnMenu.setOnClickListener {
+            Toast.makeText(this, "Menu clicked", Toast.LENGTH_SHORT).show()
         }
 
-        // Add Events button
         btnAddEvents.setOnClickListener {
             val intent = Intent(this, createOpportunityorg::class.java)
             startActivityForResult(intent, REQUEST_CODE_ADD_EVENT)
@@ -70,22 +72,100 @@ class EventsActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerView() {
-        eventsAdapter = EventsAdapter(mutableListOf()) { event ->
-            // Handle event click - you can open event details here
-            Toast.makeText(this, "Clicked: ${event.event_name}", Toast.LENGTH_SHORT).show()
-            // TODO: Open event details activity
-        }
+        eventsAdapter = EventsAdapterOrg(
+            mutableListOf(),
+            onEditClick = { event ->
+                val intent = Intent(this, createOpportunityorg::class.java)
+                intent.putExtra("MODE", "EDIT")
+                intent.putExtra("event_id", event.event_id)
+                intent.putExtra("event_name", event.event_name)
+                intent.putExtra("event_location", event.event_location)
+                intent.putExtra("event_date", event.event_date)
+                intent.putExtra("event_description", event.event_description)
+                intent.putExtra("poster_image", event.poster_image)
+                startActivityForResult(intent, REQUEST_CODE_EDIT_EVENT)
+            },
+            onDeleteClick = { event ->
+                showDeleteConfirmation(event)
+            },
+            onViewClick = { event ->
+                val intent = Intent(this, OpportunityDetailActivity::class.java)
+                intent.putExtra("EVENT_ID", event.event_id)
+                startActivity(intent)
+            }
+        )
 
-        recyclerView.apply {
-            layoutManager = LinearLayoutManager(this@EventsActivity)
-            adapter = eventsAdapter
-        }
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        recyclerView.adapter = eventsAdapter
+    }
+
+    private fun showDeleteConfirmation(event: Event) {
+        AlertDialog.Builder(this)
+            .setTitle("Delete Event")
+            .setMessage("Are you sure you want to delete '${event.event_name}'?")
+            .setPositiveButton("Delete") { _, _ ->
+                deleteEvent(event)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun deleteEvent(event: Event) {
+        progressDialog.setMessage("Deleting event...")
+        progressDialog.show()
+
+        val url = "${API_BASE_URL}deleteevent.php"
+
+        val formBody = FormBody.Builder()
+            .add("event_id", event.event_id.toString())
+            .add("user_id", userId.toString())
+            .build()
+
+        val request = Request.Builder()
+            .url(url)
+            .post(formBody)
+            .build()
+
+        client.newCall(request).enqueue(object: Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                runOnUiThread {
+                    progressDialog.dismiss()
+                    Toast.makeText(this@EventsActivity, "Network error: ${e.message}", Toast.LENGTH_LONG).show()
+                }
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                val body = response.body?.string()
+
+                runOnUiThread {
+                    progressDialog.dismiss()
+                    try {
+                        if (body.isNullOrEmpty()) {
+                            Toast.makeText(this@EventsActivity, "Empty server response", Toast.LENGTH_SHORT).show()
+                            return@runOnUiThread
+                        }
+
+                        val json = JSONObject(body)
+                        val status = json.getString("status")
+                        val message = json.getString("message")
+
+                        Toast.makeText(this@EventsActivity, message, Toast.LENGTH_SHORT).show()
+
+                        if (status == "success") {
+                            eventsAdapter.removeEvent(event.event_id)
+                        }
+
+                    } catch (e: Exception) {
+                        Toast.makeText(this@EventsActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        })
     }
 
     private fun loadEvents() {
         progressDialog.show()
 
-        // Build URL with user_id filter to get only this organization's events
         val url = "${API_BASE_URL}getevents.php?user_id=$userId"
 
         val request = Request.Builder()
@@ -93,98 +173,73 @@ class EventsActivity : AppCompatActivity() {
             .get()
             .build()
 
-        client.newCall(request).enqueue(object : Callback {
+        client.newCall(request).enqueue(object: Callback {
             override fun onFailure(call: Call, e: IOException) {
                 runOnUiThread {
                     progressDialog.dismiss()
-                    Toast.makeText(
-                        this@EventsActivity,
-                        "Network error: ${e.message}",
-                        Toast.LENGTH_LONG
-                    ).show()
-                    Log.e("EventsActivity", "Network error", e)
+                    Toast.makeText(this@EventsActivity, "Network error: ${e.message}", Toast.LENGTH_LONG).show()
                 }
             }
 
             override fun onResponse(call: Call, response: Response) {
-                val responseBody = response.body?.string()
+                val body = response.body?.string()
 
                 runOnUiThread {
                     progressDialog.dismiss()
-
                     try {
-                        if (responseBody.isNullOrEmpty()) {
-                            Toast.makeText(
-                                this@EventsActivity,
-                                "Empty response from server",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                        if (body.isNullOrEmpty()) {
+                            Toast.makeText(this@EventsActivity, "Empty response", Toast.LENGTH_SHORT).show()
                             return@runOnUiThread
                         }
 
-                        Log.d("EventsActivity", "Response: $responseBody")
-
-                        val jsonResponse = JSONObject(responseBody)
-                        val status = jsonResponse.getString("status")
+                        val json = JSONObject(body)
+                        val status = json.getString("status")
 
                         if (status == "success") {
-                            val eventsArray = jsonResponse.getJSONArray("events")
-                            val eventsList = mutableListOf<Event>()
+                            val eventsArray = json.getJSONArray("events")
+                            val list = mutableListOf<Event>()
 
                             for (i in 0 until eventsArray.length()) {
                                 val eventObj = eventsArray.getJSONObject(i)
-                                val organizerObj = eventObj.getJSONObject("organizer")
+                                val orgObj = eventObj.getJSONObject("organizer")
 
-                                val event = Event(
-                                    event_id = eventObj.getInt("event_id"),
-                                    event_name = eventObj.getString("event_name"),
-                                    event_location = eventObj.getString("event_location"),
-                                    event_date = eventObj.getString("event_date"),
-                                    event_time = if (eventObj.isNull("event_time")) null else eventObj.getString("event_time"),
-                                    event_description = eventObj.getString("event_description"),
-                                    poster_image = if (eventObj.isNull("poster_image")) null
-                                    else eventObj.getString("poster_image"),
-                                    volunteer_tasks = if (eventObj.isNull("volunteer_tasks")) null else eventObj.getString("volunteer_tasks"),
-                                    things_to_bring = if (eventObj.isNull("things_to_bring")) null else eventObj.getString("things_to_bring"),
-                                    meeting_point = if (eventObj.isNull("meeting_point")) null else eventObj.getString("meeting_point"),
-                                    contact_info = if (eventObj.isNull("contact_info")) null else eventObj.getString("contact_info"),
-                                    status = eventObj.getString("status"),
-                                    participant_count = eventObj.getInt("participant_count"),
-                                    created_at = eventObj.getString("created_at"),
-                                    organizer = Organizer(
-                                        user_id = organizerObj.getInt("user_id"),
-                                        name = organizerObj.getString("name"),
-                                        profile_image = if (organizerObj.isNull("profile_image")) null
-                                        else organizerObj.getString("profile_image")
+                                list.add(
+                                    Event(
+                                        event_id = eventObj.getInt("event_id"),
+                                        event_name = eventObj.getString("event_name"),
+                                        event_location = eventObj.getString("event_location"),
+                                        event_date = eventObj.getString("event_date"),
+                                        event_time = eventObj.optString("event_time", null),
+                                        event_description = eventObj.getString("event_description"),
+                                        poster_image = eventObj.optString("poster_image", null),
+                                        volunteer_tasks = eventObj.optString("volunteer_tasks", null),
+                                        things_to_bring = eventObj.optString("things_to_bring", null),
+                                        meeting_point = eventObj.optString("meeting_point", null),
+                                        contact_info = eventObj.optString("contact_info", null),
+                                        status = eventObj.getString("status"),
+                                        participant_count = eventObj.getInt("participant_count"),
+                                        created_at = eventObj.getString("created_at"),
+                                        organizer = Organizer(
+                                            user_id = orgObj.getInt("user_id"),
+                                            name = orgObj.getString("name"),
+                                            profile_image = orgObj.optString("profile_image", null)
+                                        )
                                     )
                                 )
-
-                                eventsList.add(event)
                             }
 
-                            eventsAdapter.updateEvents(eventsList)
+                            eventsAdapter.updateEvents(list)
 
-                            if (eventsList.isEmpty()) {
-                                Toast.makeText(
-                                    this@EventsActivity,
-                                    "No events found. Create your first event!",
-                                    Toast.LENGTH_SHORT
-                                ).show()
+                            if (list.isEmpty()) {
+                                Toast.makeText(this@EventsActivity, "No events found", Toast.LENGTH_SHORT).show()
                             }
 
                         } else {
-                            val message = jsonResponse.optString("message", "Failed to load events")
-                            Toast.makeText(this@EventsActivity, message, Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this@EventsActivity, json.optString("message", "Failed"), Toast.LENGTH_SHORT).show()
                         }
 
                     } catch (e: Exception) {
-                        Toast.makeText(
-                            this@EventsActivity,
-                            "Error parsing data: ${e.message}",
-                            Toast.LENGTH_LONG
-                        ).show()
-                        Log.e("EventsActivity", "Parse error", e)
-                        Log.e("EventsActivity", "Response was: $responseBody")
+                        Toast.makeText(this@EventsActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
@@ -194,14 +249,14 @@ class EventsActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        if (requestCode == REQUEST_CODE_ADD_EVENT && resultCode == RESULT_OK) {
-            // Event was posted successfully, reload the list
-            Toast.makeText(this, "Event posted! Refreshing list...", Toast.LENGTH_SHORT).show()
+        if ((requestCode == REQUEST_CODE_ADD_EVENT || requestCode == REQUEST_CODE_EDIT_EVENT) && resultCode == RESULT_OK) {
+            Toast.makeText(this, "Event saved! Refreshing...", Toast.LENGTH_SHORT).show()
             loadEvents()
         }
     }
 
     companion object {
         private const val REQUEST_CODE_ADD_EVENT = 100
+        private const val REQUEST_CODE_EDIT_EVENT = 101
     }
 }
