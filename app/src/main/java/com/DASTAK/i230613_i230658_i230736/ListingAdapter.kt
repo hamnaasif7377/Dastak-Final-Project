@@ -8,6 +8,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.DASTAK.i230613_i230658_i230736.R
 import com.DASTAK.i230613_i230658_i230736.models.listing
+import com.DASTAK.i230613_i230658_i230736.utils.ImageUtils
 
 class ListingAdapter(
     private val items: List<listing>,
@@ -29,7 +30,21 @@ class ListingAdapter(
         val item = items[position]
         holder.title.text = item.title
         holder.subtitle.text = item.subtitle
-        holder.img.setImageResource(item.imageRes)
+
+        // Load image from Base64 or use resource
+        if (item.imageBase64.isNotEmpty()) {
+            val bitmap = ImageUtils.base64ToBitmap(item.imageBase64)
+            if (bitmap != null) {
+                holder.img.setImageBitmap(bitmap)
+            } else {
+                holder.img.setImageResource(R.drawable.grid_icon)
+            }
+        } else if (item.imageRes != 0) {
+            holder.img.setImageResource(item.imageRes)
+        } else {
+            holder.img.setImageResource(R.drawable.grid_icon)
+        }
+
         holder.itemView.setOnClickListener { itemClick?.invoke(item) }
     }
 

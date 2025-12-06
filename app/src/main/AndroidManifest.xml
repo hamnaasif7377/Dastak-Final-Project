@@ -17,11 +17,12 @@
         android:theme="@style/Theme.I230613_i230658_i230736"
         android:usesCleartextTraffic="true">
         <activity
-            android:name=".volunteer_profile"
+            android:name=".AddEngagement"
             android:exported="false" />
         <activity
-            android:name=".item_volunteer_registration"
+            android:name=".volunteer_profile"
             android:exported="false" />
+
         <activity
             android:name=".VolunteerList"
             android:exported="false" />
