@@ -30,6 +30,7 @@ class organizationProfile : AppCompatActivity() {
     private lateinit var menuHome: LinearLayout
     private lateinit var menuEditProfile: LinearLayout
     private lateinit var menuCreateOpportunity: LinearLayout
+    private lateinit var menuVolunteerList: LinearLayout
     private lateinit var menuNotifications: LinearLayout
     private lateinit var menuLogout: LinearLayout
 
@@ -55,6 +56,7 @@ class organizationProfile : AppCompatActivity() {
         menuHome = findViewById(R.id.menu_home)
         menuEditProfile = findViewById(R.id.menu_edit_profile)
         menuCreateOpportunity = findViewById(R.id.menu_create_opportunity)
+        menuVolunteerList = findViewById(R.id.menu_volunteer_list)
         menuNotifications = findViewById(R.id.menu_notifications)
         menuLogout = findViewById(R.id.menu_logout)
 
@@ -91,6 +93,12 @@ class organizationProfile : AppCompatActivity() {
         menuCreateOpportunity.setOnClickListener {
             drawerLayout.closeDrawers()
             val intent = Intent(this, createOpportunityorg::class.java)
+            startActivity(intent)
+        }
+
+        menuVolunteerList.setOnClickListener {
+            drawerLayout.closeDrawers()
+            val intent = Intent(this, VolunteerListActivity::class.java)
             startActivity(intent)
         }
 

@@ -17,6 +17,12 @@
         android:theme="@style/Theme.I230613_i230658_i230736"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".item_volunteer_registration"
+            android:exported="false" />
+        <activity
+            android:name=".VolunteerList"
+            android:exported="false" />
+        <activity
             android:name=".RegisterConfirmation"
             android:exported="false" />
         <activity
@@ -70,6 +76,9 @@
         <activity
             android:name=".login_v"
             android:exported="false" />
+        <activity
+        android:name=".VolunteerListActivity"
+        android:exported="false" />
         <activity
             android:name=".MainActivity"
             android:exported="true">
