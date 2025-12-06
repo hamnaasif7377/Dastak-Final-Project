@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/notificationCard"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="3dp"
+    app:cardBackgroundColor="#FFFFFF">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp">
+
+        <!-- User Avatar -->
+        <ImageView
+            android:id="@+id/userAvatar"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:src="@drawable/image8"
+            android:scaleType="centerCrop"
+            android:contentDescription="User Avatar" />
+
+        <!-- Buttons on the right -->
+        <LinearLayout
+            android:id="@+id/buttonContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnAccept"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:text="Accept"
+                android:textSize="14sp"
+                android:textColor="#FFFFFF"
+                android:textAllCaps="false"
+                android:background="@drawable/button_purple_background"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp" />
+
+            <Button
+                android:id="@+id/btnReject"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/button_purple_background"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:text="Reject"
+                android:textAllCaps="false"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp" />
+
+        </LinearLayout>
+
+        <!-- Text container -->
+        <LinearLayout
+            android:id="@+id/textContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@id/userAvatar"
+            android:layout_toStartOf="@id/buttonContainer"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp"
+            android:orientation="vertical"
+            android:layout_centerVertical="true">
+
+            <TextView
+                android:id="@+id/notificationText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Fatima requested to join your Blood Donation Drive"
+                android:textSize="15sp"
+                android:textColor="#000000"
+                android:lineSpacingExtra="2dp" />
+        </LinearLayout>
+
+    </RelativeLayout>
+
+</androidx.cardview.widget.CardView>
