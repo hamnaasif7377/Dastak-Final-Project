@@ -17,12 +17,20 @@
         android:theme="@style/Theme.I230613_i230658_i230736"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".Edit_profile_volunteer"
+            android:exported="false" />
+        <activity
             android:name=".AddEngagement"
             android:exported="false" />
         <activity
             android:name=".volunteer_profile"
-            android:exported="false" />
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
 
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".VolunteerList"
             android:exported="false" />
@@ -85,13 +93,7 @@
             android:exported="false" />
         <activity
             android:name=".MainActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+            android:exported="false"></activity>
     </application>
 
 </manifest>

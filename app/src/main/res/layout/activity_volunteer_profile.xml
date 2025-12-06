@@ -1,229 +1,371 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/main"
+    android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#F5F5F5">
 
-    <!-- Top Bar -->
+    <!-- Main Content -->
     <RelativeLayout
-        android:id="@+id/topBar"
+        android:id="@+id/main"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:background="@color/grey_bg"
-        android:elevation="2dp">
+        android:layout_height="match_parent">
 
-        <ImageView
-            android:id="@+id/backButton"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:src="@drawable/chevron_left"
-            android:layout_alignParentStart="true"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="16dp" />
+        <!-- Top Bar -->
+        <RelativeLayout
+            android:id="@+id/topBar"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:background="@color/grey_bg"
+            android:elevation="2dp">
 
-        <ImageView
-            android:id="@+id/menuButton"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:src="@drawable/menue_icon"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:layout_marginEnd="16dp" />
+            <ImageView
+                android:id="@+id/backButton"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:src="@drawable/chevron_left"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="16dp" />
+
+            <ImageView
+                android:id="@+id/menuButton"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:src="@drawable/menue_icon"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="16dp" />
+
+        </RelativeLayout>
+
+        <!-- Profile Header -->
+        <LinearLayout
+            android:id="@+id/profileHeader"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/topBar"
+            android:background="@drawable/button_purple_background"
+            android:orientation="horizontal"
+            android:padding="16dp"
+            android:gravity="center_vertical">
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/profileImage"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:src="@drawable/pfp"
+                app:civ_border_width="2dp"
+                app:civ_border_color="@color/white" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginStart="16dp">
+
+                <TextView
+                    android:id="@+id/userName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="AinaFatima"
+                    android:textSize="18sp"
+                    android:textColor="@color/white"
+                    android:textStyle="bold"
+                    android:fontFamily="@font/inika_regular" />
+
+                <TextView
+                    android:id="@+id/userTagline"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Rawalpindi,Punjab,Pakistan"
+                    android:textSize="12sp"
+                    android:textColor="#E0E0E0"
+                    android:fontFamily="@font/inika_regular" />
+
+                <TextView
+                    android:id="@+id/userDescription"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="9 contributions"
+                    android:textSize="12sp"
+                    android:textColor="#E0E0E0"
+                    android:fontFamily="@font/inika_regular" />
+
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/verifiedBadge"
+                android:layout_width="24dp"
+                android:layout_height="24dp" />
+
+        </LinearLayout>
+
+        <!-- Content: use NestedScrollView so RecyclerViews expand correctly -->
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/contentScroll"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@id/profileHeader"
+            android:layout_above="@id/bottomBar"
+            android:fillViewport="true">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <!-- Listings Section Header -->
+                <TextView
+                    android:id="@+id/listingsLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Listings"
+                    android:textSize="14sp"
+                    android:textColor="#666666"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp"
+                    android:fontFamily="@font/inika_regular" />
+
+                <!-- Listings RecyclerView -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recyclerListings"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false"
+                    android:clipToPadding="false"
+                    android:overScrollMode="never" />
+
+                <!-- Add Listing Card -->
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/addListingCard"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="3dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:padding="16dp"
+                        android:background="@color/white">
+
+                        <ImageView
+                            android:id="@+id/addListingButton"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:src="@drawable/grid_icon" />
+                    </LinearLayout>
+
+                </androidx.cardview.widget.CardView>
+
+                <!-- Spacing -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="16dp" />
+
+                <!-- Community Engagements Section Header -->
+                <TextView
+                    android:id="@+id/engagementsLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Community Engagements"
+                    android:textSize="14sp"
+                    android:textColor="#666666"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp"
+                    android:fontFamily="@font/inika_regular" />
+
+                <!-- Engagements RecyclerView -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recyclerEngagements"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false"
+                    android:clipToPadding="false"
+                    android:overScrollMode="never" />
+
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/addListingCard2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="3dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:padding="16dp"
+                        android:background="@color/white">
+
+                        <ImageView
+                            android:id="@+id/addListingButton2"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:src="@drawable/grid_icon" />
+                    </LinearLayout>
+
+                </androidx.cardview.widget.CardView>
+
+                <!-- Bottom spacing -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="32dp" />
+
+            </LinearLayout>
+
+        </androidx.core.widget.NestedScrollView>
+
+        <!-- Bottom Bar -->
+        <View
+            android:id="@+id/bottomBar"
+            android:layout_width="match_parent"
+            android:layout_height="24dp"
+            android:layout_alignParentBottom="true"
+            android:background="@color/dark_purple" />
 
     </RelativeLayout>
 
-    <!-- Profile Header -->
-    <LinearLayout
-        android:id="@+id/profileHeader"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/topBar"
-        android:background="@drawable/button_purple_background"
-        android:orientation="horizontal"
-        android:padding="16dp"
-        android:gravity="center_vertical">
-
-        <de.hdodenhof.circleimageview.CircleImageView
-            android:id="@+id/profileImage"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:src="@drawable/pfp"
-            app:civ_border_width="2dp"
-            app:civ_border_color="@color/white" />
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:layout_marginStart="16dp">
-
-            <TextView
-                android:id="@+id/userName"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="AinaFatima"
-                android:textSize="18sp"
-                android:textColor="@color/white"
-                android:textStyle="bold"
-                android:fontFamily="@font/inika_regular" />
-
-            <TextView
-                android:id="@+id/userTagline"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Rawalpindi,Punjab,Pakistan"
-                android:textSize="12sp"
-                android:textColor="#E0E0E0"
-                android:fontFamily="@font/inika_regular" />
-
-            <TextView
-                android:id="@+id/userDescription"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="9 contributions"
-                android:textSize="12sp"
-                android:textColor="#E0E0E0"
-                android:fontFamily="@font/inika_regular" />
-
-        </LinearLayout>
-
-        <ImageView
-            android:id="@+id/verifiedBadge"
-            android:layout_width="24dp"
-            android:layout_height="24dp" />
-
-    </LinearLayout>
-
-    <!-- Content: use NestedScrollView so RecyclerViews expand correctly -->
-    <androidx.core.widget.NestedScrollView
-        android:id="@+id/contentScroll"
-        android:layout_width="match_parent"
+    <!-- Navigation Drawer -->
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/nav_view"
+        android:layout_width="280dp"
         android:layout_height="match_parent"
-        android:layout_below="@id/profileHeader"
-        android:layout_above="@id/bottomBar"
-        android:fillViewport="true">
+        android:layout_gravity="start"
+        android:background="@color/white">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Listings Section Header -->
-            <TextView
-                android:id="@+id/listingsLabel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Listings"
-                android:textSize="14sp"
-                android:textColor="#666666"
-                android:textStyle="bold"
-                android:layout_marginBottom="8dp"
-                android:fontFamily="@font/inika_regular" />
-
-            <!-- Listings RecyclerView -->
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recyclerListings"
+            <!-- Drawer Header -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:nestedScrollingEnabled="false"
-                android:clipToPadding="false"
-                android:overScrollMode="never" />
+                android:orientation="vertical"
+                android:padding="16dp"
+                android:background="@drawable/button_purple_background">
 
-            <!-- Add Listing Card -->
-            <androidx.cardview.widget.CardView
-                android:id="@+id/addListingCard"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="3dp">
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:id="@+id/drawerProfileImage"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:src="@drawable/pfp"
+                    app:civ_border_width="2dp"
+                    app:civ_border_color="@color/white" />
 
-                <LinearLayout
-                    android:layout_width="match_parent"
+                <TextView
+                    android:id="@+id/drawerUserName"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:padding="16dp"
-                    android:background="@color/white">
+                    android:text="User Name"
+                    android:textSize="16sp"
+                    android:textColor="@color/white"
+                    android:textStyle="bold"
+                    android:layout_marginTop="8dp" />
 
-                    <ImageView
-                        android:id="@+id/addListingButton"
-                        android:layout_width="30dp"
-                        android:layout_height="30dp"
-                        android:src="@drawable/grid_icon" />
-                </LinearLayout>
+            </LinearLayout>
 
-            </androidx.cardview.widget.CardView>
-
-
-            <!-- Spacing -->
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="16dp" />
-
-            <!-- Community Engagements Section Header -->
-            <TextView
-                android:id="@+id/engagementsLabel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Community Engagements"
-                android:textSize="14sp"
-                android:textColor="#666666"
-                android:textStyle="bold"
-                android:layout_marginBottom="8dp"
-                android:fontFamily="@font/inika_regular" />
-
-            <!-- Engagements RecyclerView -->
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recyclerEngagements"
+            <!-- Menu Items -->
+            <LinearLayout
+                android:id="@+id/menu_home"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:nestedScrollingEnabled="false"
-                android:clipToPadding="false"
-                android:overScrollMode="never" />
+                android:orientation="horizontal"
+                android:padding="16dp"
+                android:gravity="center_vertical"
+                android:background="?attr/selectableItemBackground">
 
-            <androidx.cardview.widget.CardView
-                android:id="@+id/addListingCard2"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="3dp">
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/home" />
 
-                <LinearLayout
-                    android:layout_width="match_parent"
+                <TextView
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:padding="16dp"
-                    android:background="@color/white">
+                    android:text="Home"
+                    android:textSize="16sp"
+                    android:layout_marginStart="16dp" />
+            </LinearLayout>
 
-                    <ImageView
-                        android:id="@+id/addListingButton2"
-                        android:layout_width="30dp"
-                        android:layout_height="30dp"
-                        android:src="@drawable/grid_icon" />
-                </LinearLayout>
-
-            </androidx.cardview.widget.CardView>
-
-            <!-- Bottom spacing -->
-            <View
+            <LinearLayout
+                android:id="@+id/menu_edit_profile"
                 android:layout_width="match_parent"
-                android:layout_height="32dp" />
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="16dp"
+                android:gravity="center_vertical"
+                android:background="?attr/selectableItemBackground">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_edit_profile" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Edit Profile"
+                    android:textSize="16sp"
+                    android:layout_marginStart="16dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/menu_notifications"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="16dp"
+                android:gravity="center_vertical"
+                android:background="?attr/selectableItemBackground">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_notification" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Notifications"
+                    android:textSize="16sp"
+                    android:layout_marginStart="16dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/menu_logout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="16dp"
+                android:gravity="center_vertical"
+                android:background="?attr/selectableItemBackground">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_logout" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Logout"
+                    android:textSize="16sp"
+                    android:layout_marginStart="16dp" />
+            </LinearLayout>
 
         </LinearLayout>
 
-    </androidx.core.widget.NestedScrollView>
+    </com.google.android.material.navigation.NavigationView>
 
-    <!-- Bottom Bar -->
-    <View
-        android:id="@+id/bottomBar"
-        android:layout_width="match_parent"
-        android:layout_height="24dp"
-        android:layout_alignParentBottom="true"
-        android:background="@color/dark_purple" />
-
-</RelativeLayout>
+</androidx.drawerlayout.widget.DrawerLayout>

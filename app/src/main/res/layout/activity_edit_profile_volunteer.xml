@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#D9D9D9"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:padding="16dp">
+
+    <!-- Header with back button and menu -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="20dp">
+
+        <ImageButton
+            android:id="@+id/backButton"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/chevron_left" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Edit Profile"
+            android:fontFamily="@font/inika_regular"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:textColor="@android:color/black" />
+
+        <ImageButton
+            android:id="@+id/menuButton"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_menu" />
+    </LinearLayout>
+
+    <!-- Subtitle -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Edit your Volunteer Account"
+        android:fontFamily="@font/inika_regular"
+        android:textSize="14sp"
+        android:textColor="#999999"
+        android:gravity="center"
+        android:layout_marginBottom="24dp" />
+
+    <!-- Profile Picture -->
+    <FrameLayout
+        android:id="@+id/add_image"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="10dp">
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/profileImageView"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:background="@drawable/pfp"
+
+            />
+
+    </FrameLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Name Field -->
+            <TextView
+
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Name"
+                android:fontFamily="@font/inika_regular"
+                android:textSize="12sp"
+                android:textColor="@android:color/black"
+                android:textStyle="bold" />
+
+            <EditText
+                android:layout_marginTop="10dp"
+                android:id="@+id/nameEditText"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:hint="emailmu@mail.com"
+                android:fontFamily="@font/inika_regular"
+                android:textSize="14sp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:background="@drawable/input_border_purple"
+                android:textColor="@android:color/black"
+                android:textColorHint="#CCCCCC"
+                android:inputType="text"
+                />
+
+            <!-- Username Field -->
+            <TextView
+                android:layout_marginTop="10dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Username"
+                android:fontFamily="@font/inika_regular"
+                android:textSize="12sp"
+                android:textColor="@android:color/black"
+                android:textStyle="bold"
+                />
+
+            <EditText
+                android:layout_marginTop="10dp"
+                android:id="@+id/usernameEditText"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:hint="jamthie"
+                android:fontFamily="@font/inika_regular"
+                android:textSize="14sp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:background="@drawable/input_border_purple"
+                android:textColor="@android:color/black"
+                android:textColorHint="#CCCCCC"
+                android:inputType="text"
+              />
+
+            <!-- New Password Field -->
+            <TextView
+                android:layout_marginTop="10dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="New Password"
+                android:fontFamily="@font/inika_regular"
+                android:textSize="12sp"
+                android:textColor="@android:color/black"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp" />
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+               >
+
+                <EditText
+
+                    android:id="@+id/passwordEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:hint="••••••••"
+                    android:fontFamily="@font/inika_regular"
+                    android:textSize="14sp"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:background="@drawable/input_border_purple"
+                    android:textColor="@android:color/black"
+                    android:textColorHint="#CCCCCC"
+                    android:inputType="textPassword" />
+
+                <ImageButton
+                    android:id="@+id/passwordToggleButton"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_gravity="end"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_eye_off" />
+            </FrameLayout>
+
+            <!-- Locations Field -->
+            <TextView
+                android:layout_marginTop="10dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Locations"
+                android:fontFamily="@font/inika_regular"
+                android:textSize="12sp"
+                android:textColor="@android:color/black"
+                android:textStyle="bold"
+               />
+
+            <EditText
+                android:layout_marginTop="10dp"
+                android:id="@+id/locationsEditText"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:hint="Islamabad, Pakistan"
+                android:fontFamily="@font/inika_regular"
+                android:textSize="14sp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:background="@drawable/input_border_purple"
+                android:textColor="@android:color/black"
+                android:textColorHint="#CCCCCC"
+                android:inputType="text"
+                />
+
+        </LinearLayout>
+
+    <!-- Done Button -->
+    <Button
+        android:id="@+id/doneButton"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="Done"
+        android:fontFamily="@font/inika_regular"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/white"
+        app:backgroundTint="@null"
+        android:background="@drawable/button_purple_background"
+        android:layout_marginTop="16dp" />
+
+</LinearLayout>
