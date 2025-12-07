@@ -1,7 +1,10 @@
 package com.DASTAK.i230613_i230658_i230736
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.core.view.ViewCompat
@@ -15,21 +18,38 @@ import com.DASTAK.i230613_i230658_i230736.models.Engagement
 import com.DASTAK.i230613_i230658_i230736.User
 import com.DASTAK.i230613_i230658_i230736.models.listing
 import com.DASTAK.i230613_i230658_i230736.utils.ImageUtils
+import com.android.volley.Request
+import com.android.volley.RequestQueue
+import com.android.volley.toolbox.StringRequest
+import com.android.volley.toolbox.Volley
 import com.google.firebase.database.*
+import org.json.JSONObject
 
 class volunteer_profile : AppCompatActivity() {
 
     private lateinit var binding: ActivityVolunteerProfileBinding
     private lateinit var database: FirebaseDatabase
     private lateinit var drawerLayout: DrawerLayout
+    private lateinit var requestQueue: RequestQueue
 
-    private var userId = "user123" // Replace with actual user ID from Firebase Auth
+    private var userIdInt = 0
+    private val TAG = "VolunteerProfile"
 
     private val listingsList = mutableListOf<listing>()
     private val engagementsList = mutableListOf<Engagement>()
 
     private lateinit var listingAdapter: ListingAdapter
     private lateinit var engagementAdapter: EngagementAdapter
+
+    // ✅ Activity Result Launcher for Edit Profile
+    private val editProfileLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            Log.d(TAG, "Refreshing profile after edit")
+            fetchUserProfileFromFirebase()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,32 +64,46 @@ class volunteer_profile : AppCompatActivity() {
         }
 
         database = FirebaseDatabase.getInstance()
+        requestQueue = Volley.newRequestQueue(this)
         drawerLayout = binding.drawerLayout
+
+        val sharedPref = getSharedPreferences("userPrefs", Context.MODE_PRIVATE)
+
+        userIdInt = try {
+            sharedPref.getString("user_id", "0")?.toIntOrNull() ?: 0
+        } catch (e: Exception) {
+            sharedPref.getInt("user_id", 0)
+        }
+
+        Log.d(TAG, "Current User ID: $userIdInt")
+
+        if (userIdInt == 0) {
+            val intent = Intent(this, login_v::class.java)
+            startActivity(intent)
+            finishAffinity()
+            return
+        }
 
         setupListings()
         setupEngagements()
         setupClicks()
         setupDrawer()
 
-        initializeUserIfNeeded()
-
-        // Fetch data from Firebase
-        fetchUserProfile()
+        fetchUserProfileFromFirebase()
         fetchListings()
         fetchEngagements()
     }
 
     override fun onResume() {
         super.onResume()
-        // Refresh data when returning
-        fetchUserProfile()
+        fetchUserProfileFromFirebase()
         fetchListings()
         fetchEngagements()
     }
 
     private fun setupListings() {
         listingAdapter = ListingAdapter(listingsList) { listing ->
-            // TODO: handle listing click
+            Log.d(TAG, "Listing clicked: ${listing.id}")
         }
 
         binding.recyclerListings.apply {
@@ -82,7 +116,7 @@ class volunteer_profile : AppCompatActivity() {
 
     private fun setupEngagements() {
         engagementAdapter = EngagementAdapter(engagementsList) { engagement ->
-            // TODO: handle engagement click
+            Log.d(TAG, "Engagement clicked: ${engagement.id}")
         }
 
         binding.recyclerEngagements.apply {
@@ -98,12 +132,10 @@ class volunteer_profile : AppCompatActivity() {
             onBackPressedDispatcher.onBackPressed()
         }
 
-        // Open drawer when menu button is clicked
         binding.menuButton.setOnClickListener {
             drawerLayout.openDrawer(GravityCompat.START)
         }
 
-        // Click listeners for add buttons
         binding.addListingButton.setOnClickListener {
             startActivity(Intent(this, AddEngagement::class.java))
         }
@@ -114,7 +146,6 @@ class volunteer_profile : AppCompatActivity() {
     }
 
     private fun setupDrawer() {
-        // Find drawer menu items
         val menuHome = findViewById<android.widget.LinearLayout>(R.id.menu_home)
         val menuEditProfile = findViewById<android.widget.LinearLayout>(R.id.menu_edit_profile)
         val menuNotifications = findViewById<android.widget.LinearLayout>(R.id.menu_notifications)
@@ -127,50 +158,150 @@ class volunteer_profile : AppCompatActivity() {
         menuEditProfile.setOnClickListener {
             drawerLayout.closeDrawers()
             val intent = Intent(this, Edit_profile_volunteer::class.java)
-            startActivity(intent)
+            editProfileLauncher.launch(intent)  // ✅ Use launcher to get result
         }
 
         menuNotifications.setOnClickListener {
             drawerLayout.closeDrawers()
-            val intent = Intent(this , NotificationActivity::class.java)
+            val intent = Intent(this, NotificationActivity::class.java)
             startActivity(intent)
         }
 
         menuLogout.setOnClickListener {
             drawerLayout.closeDrawers()
+            val sharedPref = getSharedPreferences("userPrefs", Context.MODE_PRIVATE)
+            with(sharedPref.edit()) {
+                putBoolean("isLoggedIn", false)
+                remove("user_id")
+                remove("email")
+                remove("name")
+                apply()
+            }
             val intent = Intent(this, login_v::class.java)
             startActivity(intent)
+            finishAffinity()
         }
     }
 
-    private fun fetchUserProfile() {
-        val userRef = database.reference.child("users").child(userId)
+    private fun fetchUserProfileFromFirebase() {
+        val userRef = database.reference.child("users").child(userIdInt.toString())
 
-        userRef.addValueEventListener(object : ValueEventListener {
+        userRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val user = snapshot.getValue(User::class.java)
-                user?.let { updateProfileUI(it) }
+                if (snapshot.exists()) {
+                    val user = snapshot.getValue(User::class.java)
+                    user?.let {
+                        Log.d(TAG, "User found in Firebase: ${it.name}, username: ${it.username}")
+                        updateProfileUI(
+                            it.username.ifEmpty { it.name },
+                            it.email,
+                            it.location,
+                            it.profileImageBase64
+                        )
+
+                        // ✅ Update cache with fresh data
+                        val sharedPref = getSharedPreferences("userPrefs", Context.MODE_PRIVATE)
+                        with(sharedPref.edit()) {
+                            putString("name", it.name)
+                            putString("email", it.email)
+                            putString("location", it.location)
+                            putString("profile_image", it.profileImageBase64)
+                            apply()
+                        }
+                    }
+                } else {
+                    Log.d(TAG, "User not found in Firebase, fetching from MySQL")
+                    fetchUserProfileFromMySQL()
+                }
             }
 
             override fun onCancelled(error: DatabaseError) {
-                // Handle error
+                Log.e(TAG, "Firebase error: ${error.message}")
+                fetchUserProfileFromMySQL()
             }
         })
     }
 
-    private fun updateProfileUI(user: User) {
-        // Update main profile
-        binding.userName.text = user.username.ifEmpty { "User" }
-        binding.userTagline.text = user.location.ifEmpty { "Location not set" }
-        binding.userDescription.text = "${user.contributions} contributions"
+    private fun fetchUserProfileFromMySQL() {
+        val url = Constants.BASE_URL + "get_organization_profile.php?user_id=$userIdInt"
 
-        // Update drawer profile
+        val stringRequest = StringRequest(
+            Request.Method.GET, url,
+            { response ->
+                try {
+                    val json = JSONObject(response)
+                    val status = json.getString("status")
+
+                    if (status == "success") {
+                        val user = json.getJSONObject("user")
+                        val name = user.getString("name")
+                        val email = user.getString("email")
+                        val location = user.optString("location", "Not set")
+                        val profileImage = user.optString("profile_image", "")
+
+                        Log.d(TAG, "User loaded from MySQL: $name")
+                        updateProfileUI(name, email, location, profileImage)
+                        syncUserToFirebase(name, email, location, profileImage)
+
+                        val sharedPref = getSharedPreferences("userPrefs", Context.MODE_PRIVATE)
+                        with(sharedPref.edit()) {
+                            putString("name", name)
+                            putString("email", email)
+                            putString("location", location)
+                            putString("profile_image", profileImage)
+                            apply()
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "MySQL fetch error: ${e.message}")
+                    updateProfileUIFromCache()
+                }
+            },
+            { error ->
+                Log.e(TAG, "Network error: ${error.message}")
+                updateProfileUIFromCache()
+            }
+        )
+
+        requestQueue.add(stringRequest)
+    }
+
+    private fun syncUserToFirebase(name: String, email: String, location: String, profileImage: String) {
+        val userData = hashMapOf(
+            "id" to userIdInt,
+            "name" to name,
+            "username" to name,
+            "email" to email,
+            "location" to location,
+            "profileImageBase64" to profileImage,
+            "contributions" to 0,
+            "timestamp" to System.currentTimeMillis()
+        )
+
+        database.reference.child("users").child(userIdInt.toString())
+            .updateChildren(userData as Map<String, Any>)
+    }
+
+    private fun updateProfileUIFromCache() {
+        val sharedPref = getSharedPreferences("userPrefs", Context.MODE_PRIVATE)
+        val name = sharedPref.getString("name", "User") ?: "User"
+        val email = sharedPref.getString("email", "") ?: ""
+        val location = sharedPref.getString("location", "Location not set") ?: "Location not set"
+        val profileImage = sharedPref.getString("profile_image", "") ?: ""
+
+        updateProfileUI(name, email, location, profileImage)
+    }
+
+    private fun updateProfileUI(name: String, email: String, location: String, profileImage: String) {
+        binding.userName.text = name.ifEmpty { "User" }
+        binding.userTagline.text = location.ifEmpty { "Location not set" }
+        binding.userDescription.text = email
+
         val drawerUserName = findViewById<android.widget.TextView>(R.id.drawerUserName)
-        drawerUserName.text = user.username.ifEmpty { "User" }
+        drawerUserName.text = name.ifEmpty { "User" }
 
-        // Load profile image
-        if (user.profileImageBase64.isNotEmpty()) {
-            val bitmap = ImageUtils.base64ToBitmap(user.profileImageBase64)
+        if (profileImage.isNotEmpty()) {
+            val bitmap = ImageUtils.base64ToBitmap(profileImage)
             bitmap?.let {
                 binding.profileImage.setImageBitmap(it)
                 val drawerProfileImage = findViewById<de.hdodenhof.circleimageview.CircleImageView>(R.id.drawerProfileImage)
@@ -181,75 +312,69 @@ class volunteer_profile : AppCompatActivity() {
 
     private fun fetchListings() {
         val listingsRef = database.reference.child("listings")
-            .orderByChild("userId").equalTo(userId)
 
         listingsRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 listingsList.clear()
 
                 for (listingSnapshot in snapshot.children) {
-                    val listing = listingSnapshot.getValue(listing::class.java)
-                    listing?.let { listingsList.add(it) }
+                    try {
+                        val listing = listingSnapshot.getValue(listing::class.java)
+                        listing?.let {
+                            val itemUserId = it.getUserIdAsInt()
+                            Log.d(TAG, "Found listing: ${it.id}, userId: $itemUserId, currentUserId: $userIdInt")
+
+                            if (itemUserId == userIdInt) {
+                                listingsList.add(it)
+                            }
+                        }
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error parsing listing: ${e.message}")
+                    }
                 }
 
-                // Sort by timestamp (newest first)
+                Log.d(TAG, "Total listings for user $userIdInt: ${listingsList.size}")
                 listingsList.sortByDescending { it.timestamp }
                 listingAdapter.notifyDataSetChanged()
             }
 
             override fun onCancelled(error: DatabaseError) {
-                // Handle error
+                Log.e(TAG, "Error fetching listings: ${error.message}")
             }
         })
     }
 
     private fun fetchEngagements() {
         val engagementsRef = database.reference.child("engagements")
-            .orderByChild("userId").equalTo(userId)
 
         engagementsRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 engagementsList.clear()
 
                 for (engagementSnapshot in snapshot.children) {
-                    val engagement = engagementSnapshot.getValue(Engagement::class.java)
-                    engagement?.let { engagementsList.add(it) }
+                    try {
+                        val engagement = engagementSnapshot.getValue(Engagement::class.java)
+                        engagement?.let {
+                            val itemUserId = it.getUserIdAsInt()
+                            Log.d(TAG, "Found engagement: ${it.id}, userId: $itemUserId, currentUserId: $userIdInt")
+
+                            if (itemUserId == userIdInt) {
+                                engagementsList.add(it)
+                            }
+                        }
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error parsing engagement: ${e.message}")
+                    }
                 }
 
-                // Sort by timestamp (newest first)
+                Log.d(TAG, "Total engagements for user $userIdInt: ${engagementsList.size}")
                 engagementsList.sortByDescending { it.timestamp }
                 engagementAdapter.notifyDataSetChanged()
             }
 
             override fun onCancelled(error: DatabaseError) {
-                // Handle error
+                Log.e(TAG, "Error fetching engagements: ${error.message}")
             }
         })
     }
-
-
-    private fun initializeUserIfNeeded() {
-        val userRef = database.reference.child("users").child(userId)
-        userRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                if (!snapshot.exists()) {
-                    // Create default user
-                    val defaultUser = User(
-                        id = userId,
-                        name = "Aina Fatima",
-                        username = "AinaFatima",
-                        email = "aina@example.com",
-                        location = "Rawalpindi, Punjab, Pakistan",
-                        contributions = 0
-                    )
-                    userRef.setValue(defaultUser)
-                }
-            }
-
-            override fun onCancelled(error: DatabaseError) {}
-        })
-
-    }
-
-
 }

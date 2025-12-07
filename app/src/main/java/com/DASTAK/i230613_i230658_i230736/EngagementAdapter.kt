@@ -19,11 +19,12 @@ class EngagementAdapter(
         val img: ImageView = view.findViewById(R.id.imgEngagement)
         val title: TextView = view.findViewById(R.id.tvEngTitle)
         val whenText: TextView = view.findViewById(R.id.tvEngWhen)
-        val count: TextView = view.findViewById(R.id.tvEngCount)
+        val attendees: TextView = view.findViewById(R.id.tvEngCount)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EngagementVH {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_engagement, parent, false)
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_engagement, parent, false)
         return EngagementVH(view)
     }
 
@@ -31,9 +32,9 @@ class EngagementAdapter(
         val item = items[position]
         holder.title.text = item.title
         holder.whenText.text = item.whenText
-        holder.count.text = item.attendeesText
+        holder.attendees.text = item.attendeesText
 
-        // Load image from Base64 or use resource
+        // Load image from Base64
         if (item.imageBase64.isNotEmpty()) {
             val bitmap = ImageUtils.base64ToBitmap(item.imageBase64)
             if (bitmap != null) {
@@ -41,8 +42,6 @@ class EngagementAdapter(
             } else {
                 holder.img.setImageResource(R.drawable.grid_icon)
             }
-        } else if (item.imageRes != 0) {
-            holder.img.setImageResource(item.imageRes)
         } else {
             holder.img.setImageResource(R.drawable.grid_icon)
         }

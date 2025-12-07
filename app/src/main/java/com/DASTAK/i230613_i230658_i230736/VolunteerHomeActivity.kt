@@ -60,15 +60,17 @@ class VolunteerHomeActivity : AppCompatActivity() {
 
         // Home - Close drawer (already on home)
         findViewById<LinearLayout>(R.id.menu_home).setOnClickListener {
+           val intent = Intent(this, volunteer_profile::class.java)
+            startActivity(intent)
             drawerLayout.closeDrawer(GravityCompat.START)
         }
 
         // Edit Profile
         findViewById<LinearLayout>(R.id.menu_edit_profile).setOnClickListener {
             drawerLayout.closeDrawer(GravityCompat.START)
-            // TODO: Open Edit Profile Activity
-            // val intent = Intent(this, EditProfileActivity::class.java)
-            // startActivity(intent)
+            val intent = Intent(this, Edit_profile_volunteer::class.java)
+            startActivity(intent)
+
         }
 
         // Browse Activities

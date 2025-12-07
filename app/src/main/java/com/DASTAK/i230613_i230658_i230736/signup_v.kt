@@ -11,6 +11,7 @@ import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
+import com.google.firebase.database.FirebaseDatabase
 import org.json.JSONObject
 
 class signup_v : AppCompatActivity() {
@@ -19,6 +20,7 @@ class signup_v : AppCompatActivity() {
     private lateinit var emailInput: EditText
     private lateinit var passwordInput: EditText
     private lateinit var btnRegister: Button
+    private val database = FirebaseDatabase.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,7 +48,6 @@ class signup_v : AppCompatActivity() {
         }
 
         val url = Constants.BASE_URL + "signupvolunteer.php"
-
         val queue: RequestQueue = Volley.newRequestQueue(this)
 
         val stringRequest = object : StringRequest(
@@ -57,16 +58,26 @@ class signup_v : AppCompatActivity() {
                     val status = json.getString("status")
                     val message = json.getString("message")
                     Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+
                     if (status == "success") {
-                        // Optional: clear fields
+                        val userIdInt = if (json.has("user_id")) {
+                            json.getInt("user_id")
+                        } else {
+                            System.currentTimeMillis().toInt()
+                        }
+
+                        saveVolunteerToFirebase(userIdInt, name, email, password)
+
                         usernameInput.text.clear()
                         emailInput.text.clear()
                         passwordInput.text.clear()
 
-                        // Redirect to login activity
+                        Toast.makeText(this, "Account created! Redirecting to login...", Toast.LENGTH_SHORT).show()
+
+                        Thread.sleep(1000)
                         val intent = Intent(this@signup_v, login_v::class.java)
                         startActivity(intent)
-                        finish() // optional: remove signup activity from back stack
+                        finish()
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()
@@ -78,15 +89,40 @@ class signup_v : AppCompatActivity() {
             }
         ) {
             override fun getParams(): MutableMap<String, String> {
-                val params = HashMap<String, String>()
-                params["name"] = name
-                params["email"] = email
-                params["password"] = password
-                params["role"] = "volunteer"
-                return params
+                return hashMapOf(
+                    "name" to name,
+                    "email" to email,
+                    "password" to password,
+                    "role" to "volunteer"
+                )
             }
         }
 
         queue.add(stringRequest)
+    }
+
+    private fun saveVolunteerToFirebase(userIdInt: Int, name: String, email: String, password: String) {
+        val volunteerData = hashMapOf(
+            "id" to userIdInt,
+            "userId" to userIdInt,
+            "name" to name,
+            "username" to name,
+            "email" to email,
+            "password" to password,
+            "location" to "Not set",
+            "profileImageBase64" to "",
+            "contributions" to 0,
+            "timestamp" to System.currentTimeMillis(),
+            "role" to "volunteer"
+        )
+
+        database.reference.child("users").child(userIdInt.toString())
+            .setValue(volunteerData)
+            .addOnSuccessListener {
+                Toast.makeText(this, "Profile saved to database", Toast.LENGTH_SHORT).show()
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(this, "Warning: Offline sync may be limited", Toast.LENGTH_SHORT).show()
+            }
     }
 }

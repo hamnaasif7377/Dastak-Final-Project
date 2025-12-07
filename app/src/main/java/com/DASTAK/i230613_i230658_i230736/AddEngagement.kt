@@ -1,5 +1,6 @@
 package com.DASTAK.i230613_i230658_i230736
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -23,7 +24,7 @@ class AddEngagement : AppCompatActivity() {
     private var engagementImageUri: Uri? = null
     private var selectedListingDate: String = ""
     private var selectedEngagementDate: String = ""
-
+    private var userIdInt = 0
     // Image pickers
     private val listingImagePicker = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -47,6 +48,14 @@ class AddEngagement : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityAddEngagementBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+
+        val sharedPref = getSharedPreferences("userPrefs", Context.MODE_PRIVATE)
+        userIdInt = try {
+            sharedPref.getString("user_id", "0")?.toIntOrNull() ?: 0
+        } catch (e: Exception) {
+            sharedPref.getInt("user_id", 0)
+        }
 
         setupDatePickers()
         setupImageUploads()
@@ -145,17 +154,17 @@ class AddEngagement : AppCompatActivity() {
     private fun saveListing(itemName: String, quantity: String, imageBase64: String) {
         val listingId = database.reference.child("listings").push().key ?: return
 
-        val listing = listing(
+        val listingItem = listing(
             id = listingId,
+            userId = userIdInt,  // ✅ Changed to use Int
             title = itemName,
             subtitle = "Quantity: $quantity",
             imageBase64 = imageBase64,
             date = selectedListingDate,
-            userId = "user123", // Replace with actual user ID
             timestamp = System.currentTimeMillis()
         )
 
-        database.reference.child("listings").child(listingId).setValue(listing)
+        database.reference.child("listings").child(listingId).setValue(listingItem)
             .addOnSuccessListener {
                 Toast.makeText(this, "Listing added successfully!", Toast.LENGTH_SHORT).show()
                 clearListingFields()
@@ -215,13 +224,13 @@ class AddEngagement : AppCompatActivity() {
 
         val engagement = Engagement(
             id = engagementId,
+            userId = userIdInt,  // ✅ Changed to use Int
             title = eventName,
             place = eventPlace,
             whenText = selectedEngagementDate,
             attendeesText = "0 attendees",
             imageBase64 = imageBase64,
             date = selectedEngagementDate,
-            userId = "user123", // Replace with actual user ID
             timestamp = System.currentTimeMillis()
         )
 
@@ -253,3 +262,4 @@ class AddEngagement : AppCompatActivity() {
         binding.uploadEngagement.setImageResource(R.drawable.grid_icon)
     }
 }
+

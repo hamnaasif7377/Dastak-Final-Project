@@ -21,7 +21,6 @@ class login_v : AppCompatActivity() {
     private lateinit var passwordInput: EditText
     private lateinit var btnLogin: Button
     private lateinit var signupLink: TextView
-    //private lateinit var logoutBtn: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,7 +50,6 @@ class login_v : AppCompatActivity() {
         btnLogin = findViewById(R.id.login)
         signupLink = findViewById(R.id.signup)
 
-
         // Signup link → volunteer signup page
         signupLink.setOnClickListener {
             val intent = Intent(this, signup_v::class.java)
@@ -61,8 +59,6 @@ class login_v : AppCompatActivity() {
         btnLogin.setOnClickListener {
             loginUser()
         }
-
-
     }
 
     private fun loginUser() {
@@ -94,12 +90,14 @@ class login_v : AppCompatActivity() {
                     if (status == "success") {
                         val userObj = json.getJSONObject("user")  // ← get the nested object
                         val accountRole = userObj.getString("role")
+                        val userId = userObj.getInt("user_id").toString() // ✅ Get MySQL user_id
 
                         // Role validation
                         if (selectedRole == accountRole) {
                             with(sharedPref.edit()) {
                                 putBoolean("isLoggedIn", true)
-                                putInt("user_id", userObj.getInt("user_id")) // ← This was missing!
+                                putString("user_id", userId) // ✅ Store as String for Firebase
+                                putInt("mysql_user_id", userObj.getInt("user_id")) // Also store as Int for MySQL
                                 putString("name", userObj.getString("name"))
                                 putString("email", userObj.getString("email"))
                                 putString("role", accountRole)
@@ -122,7 +120,6 @@ class login_v : AppCompatActivity() {
                             ).show()
                         }
                     }
-
 
                 } catch (e: Exception) {
                     e.printStackTrace()
@@ -149,6 +146,7 @@ class login_v : AppCompatActivity() {
         val sharedPref = getSharedPreferences("userPrefs", Context.MODE_PRIVATE)
         with(sharedPref.edit()) {
             putBoolean("isLoggedIn", false)
+            remove("user_id")
             remove("email")
             apply()
         }

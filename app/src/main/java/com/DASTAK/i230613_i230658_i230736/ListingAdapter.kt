@@ -31,7 +31,7 @@ class ListingAdapter(
         holder.title.text = item.title
         holder.subtitle.text = item.subtitle
 
-        // Load image from Base64 or use resource
+        // Load image from Base64
         if (item.imageBase64.isNotEmpty()) {
             val bitmap = ImageUtils.base64ToBitmap(item.imageBase64)
             if (bitmap != null) {
@@ -39,8 +39,6 @@ class ListingAdapter(
             } else {
                 holder.img.setImageResource(R.drawable.grid_icon)
             }
-        } else if (item.imageRes != 0) {
-            holder.img.setImageResource(item.imageRes)
         } else {
             holder.img.setImageResource(R.drawable.grid_icon)
         }
