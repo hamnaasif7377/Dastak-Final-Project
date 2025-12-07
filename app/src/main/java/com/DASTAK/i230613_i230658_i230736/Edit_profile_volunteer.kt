@@ -179,15 +179,15 @@ class Edit_profile_volunteer : AppCompatActivity() {
 
         // Prepare user data
         val userUpdates = hashMapOf(
-            "id" to userIdInt,
+            "id" to userIdInt,  // Stored as Int
             "name" to name,
             "username" to username,
             "password" to password,
             "email" to (currentUser?.email ?: ""),
             "location" to location,
             "profileImageBase64" to imageBase64,
-            "contributions" to (currentUser?.contributions ?: 0),
-            "timestamp" to System.currentTimeMillis()
+            "contributions" to (currentUser?.getContributionsAsInt() ?: 0),
+            "timestamp" to System.currentTimeMillis()  // Stored as Long
         )
 
         Log.d(TAG, "Saving profile updates for user $userIdInt")

@@ -267,19 +267,26 @@ class volunteer_profile : AppCompatActivity() {
     }
 
     private fun syncUserToFirebase(name: String, email: String, location: String, profileImage: String) {
-        val userData = hashMapOf(
-            "id" to userIdInt,
+        val userData = hashMapOf<String, Any>(
+            "id" to userIdInt,  // Int
             "name" to name,
             "username" to name,
             "email" to email,
+            "password" to "",
             "location" to location,
             "profileImageBase64" to profileImage,
-            "contributions" to 0,
-            "timestamp" to System.currentTimeMillis()
+            "contributions" to 0,  // Int
+            "timestamp" to System.currentTimeMillis()  // Long
         )
 
         database.reference.child("users").child(userIdInt.toString())
-            .updateChildren(userData as Map<String, Any>)
+            .setValue(userData)  // ✅ Use setValue for new users
+            .addOnSuccessListener {
+                Log.d(TAG, "User synced to Firebase successfully")
+            }
+            .addOnFailureListener { e ->
+                Log.e(TAG, "Failed to sync user: ${e.message}")
+            }
     }
 
     private fun updateProfileUIFromCache() {
