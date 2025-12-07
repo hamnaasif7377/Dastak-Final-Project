@@ -1,18 +1,18 @@
 pluginManagement {
     repositories {
-        google {
-            content {
-                includeGroupByRegex("com\\.android.*")
-                includeGroupByRegex("com\\.google.*")
-                includeGroupByRegex("androidx.*")
-            }
-        }
+        google()
         mavenCentral()
         gradlePluginPortal()
     }
+    plugins {
+        id("com.android.application") version "8.1.0"
+        id("org.jetbrains.kotlin.android") version "1.9.10"
+        id("com.google.gms.google-services") version "4.4.0"
+    }
 }
+
 dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
     repositories {
         google()
         mavenCentral()
@@ -21,4 +21,3 @@ dependencyResolutionManagement {
 
 rootProject.name = "i230613_i230658_i230736"
 include(":app")
- 

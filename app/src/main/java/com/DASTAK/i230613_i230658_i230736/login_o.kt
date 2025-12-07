@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
@@ -89,6 +90,9 @@ class login_o : AppCompatActivity() {
                     if (status == "success") {
                         val userObj = json.getJSONObject("user")
                         val accountRole = userObj.getString("role")
+                        Log.d("LoginDebug", "Initializing FCM ")
+                        FCMTokenService.initializeFCM(this@login_o)
+
 
                         // Role validation
                         if (selectedRole == accountRole) {

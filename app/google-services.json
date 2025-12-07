@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "519255657792",
+    "project_id": "dastak-final-project",
+    "storage_bucket": "dastak-final-project.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:519255657792:android:1407343bdac0ccc81afea5",
+        "android_client_info": {
+          "package_name": "com.DASTAK.i230613_i230658_i230736"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC017GpRhpaApzyDQPauq57FB-R6GQsyv8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
