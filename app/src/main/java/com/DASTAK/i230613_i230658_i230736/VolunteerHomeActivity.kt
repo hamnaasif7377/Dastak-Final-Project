@@ -50,6 +50,7 @@ class VolunteerHomeActivity : AppCompatActivity() {
         // Saved Activities Button
         findViewById<Button>(R.id.btnSavedActivities).setOnClickListener {
             val intent = Intent(this, SavedEvents::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
             startActivity(intent)
         }
     }
@@ -75,6 +76,7 @@ class VolunteerHomeActivity : AppCompatActivity() {
         findViewById<LinearLayout>(R.id.menu_saved).setOnClickListener {
             drawerLayout.closeDrawer(GravityCompat.START)
             val intent = Intent(this, SavedEvents::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
             startActivity(intent)
         }
 
@@ -82,6 +84,7 @@ class VolunteerHomeActivity : AppCompatActivity() {
         findViewById<LinearLayout>(R.id.menu_notifications).setOnClickListener {
             drawerLayout.closeDrawer(GravityCompat.START)
             val intent = Intent(this, NotificationActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
             startActivity(intent)
         }
 
@@ -99,6 +102,7 @@ class VolunteerHomeActivity : AppCompatActivity() {
 
     private fun openBrowseActivities() {
         val intent = Intent(this, BrowseActivitiesActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
         startActivity(intent)
     }
 
@@ -110,6 +114,7 @@ class VolunteerHomeActivity : AppCompatActivity() {
         }
 
         val intent = Intent(this, RoleActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(intent)
         finishAffinity()
     }
@@ -118,7 +123,8 @@ class VolunteerHomeActivity : AppCompatActivity() {
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
             drawerLayout.closeDrawer(GravityCompat.START)
         } else {
-            super.onBackPressed()
+            // On home screen, exit the app
+            finishAffinity()
         }
     }
 }

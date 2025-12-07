@@ -14,6 +14,8 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import okhttp3.*
@@ -24,6 +26,7 @@ import java.util.*
 
 class SavedEvents : AppCompatActivity() {
 
+    private lateinit var drawerLayout: DrawerLayout
     private lateinit var recyclerView: RecyclerView
     private lateinit var btnBack: ImageView
     private lateinit var btnMenu: ImageView
@@ -41,10 +44,7 @@ class SavedEvents : AppCompatActivity() {
 
     private var userId: Int = -1
 
-    // Store all events for filtering
     private var allEvents = mutableListOf<Event>()
-
-    // Active filters
     private var selectedDate: String? = null
     private var selectedOrganization: String? = null
     private var selectedLocation: String? = null
@@ -53,7 +53,6 @@ class SavedEvents : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_saved_events)
 
-        // Get user_id from SharedPreferences
         val sharedPref = getSharedPreferences("userPrefs", Context.MODE_PRIVATE)
         userId = sharedPref.getInt("user_id", -1)
 
@@ -63,15 +62,14 @@ class SavedEvents : AppCompatActivity() {
             return
         }
 
-        // Initialize offline sync manager
         offlineSyncManager = OfflineSyncManager(this)
 
         initializeViews()
+        setupDrawerMenu()
         setupRecyclerView()
         setupSearch()
         setupFilters()
 
-        // Try to sync pending operations if online
         if (NetworkStateReceiver.isNetworkAvailable(this)) {
             syncPendingOperations()
         }
@@ -80,6 +78,7 @@ class SavedEvents : AppCompatActivity() {
     }
 
     private fun initializeViews() {
+        drawerLayout = findViewById(R.id.drawer_layout)
         recyclerView = findViewById(R.id.recyclerViewEvents)
         btnBack = findViewById(R.id.btnBack)
         btnMenu = findViewById(R.id.btnMenu)
@@ -92,28 +91,92 @@ class SavedEvents : AppCompatActivity() {
         progressDialog.setMessage("Loading saved events...")
         progressDialog.setCancelable(false)
 
-        // Back button
+        // Back button - navigate to VolunteerHomeActivity
         btnBack.setOnClickListener {
+            val intent = Intent(this, VolunteerHomeActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            startActivity(intent)
             finish()
         }
 
-        // Menu button
+        // Menu button - open drawer
         btnMenu.setOnClickListener {
-            Toast.makeText(this, "Menu clicked", Toast.LENGTH_SHORT).show()
+            drawerLayout.openDrawer(GravityCompat.START)
         }
+    }
+
+    private fun setupDrawerMenu() {
+        // Home Menu Item
+        findViewById<LinearLayout>(R.id.menu_home).setOnClickListener {
+            drawerLayout.closeDrawer(GravityCompat.START)
+            val intent = Intent(this, VolunteerHomeActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            startActivity(intent)
+            finish()
+        }
+
+        // Edit Profile
+        findViewById<LinearLayout>(R.id.menu_edit_profile).setOnClickListener {
+            drawerLayout.closeDrawer(GravityCompat.START)
+            Toast.makeText(this, "Edit Profile - Coming Soon", Toast.LENGTH_SHORT).show()
+        }
+
+        // Browse Activities
+        findViewById<LinearLayout>(R.id.menu_browse_activities).setOnClickListener {
+            drawerLayout.closeDrawer(GravityCompat.START)
+            val intent = Intent(this, BrowseActivitiesActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            startActivity(intent)
+            finish()
+        }
+
+        // Saved Events - already on this page
+        findViewById<LinearLayout>(R.id.menu_saved).setOnClickListener {
+            drawerLayout.closeDrawer(GravityCompat.START)
+        }
+
+        // Notifications
+        findViewById<LinearLayout>(R.id.menu_notifications).setOnClickListener {
+            drawerLayout.closeDrawer(GravityCompat.START)
+            val intent = Intent(this, NotificationActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            startActivity(intent)
+            finish()
+        }
+
+        // My Contributions
+        findViewById<LinearLayout>(R.id.menu_my_contributions).setOnClickListener {
+            drawerLayout.closeDrawer(GravityCompat.START)
+            Toast.makeText(this, "My Contributions - Coming Soon", Toast.LENGTH_SHORT).show()
+        }
+
+        // Logout
+        findViewById<LinearLayout>(R.id.menu_logout).setOnClickListener {
+            logoutUser()
+        }
+    }
+
+    private fun logoutUser() {
+        val sharedPref = getSharedPreferences("userPrefs", Context.MODE_PRIVATE)
+        with(sharedPref.edit()) {
+            clear()
+            apply()
+        }
+
+        val intent = Intent(this, RoleActivity::class.java)
+        startActivity(intent)
+        finishAffinity()
     }
 
     private fun setupRecyclerView() {
         savedEventsAdapter = SavedEventsAdapter(
             mutableListOf(),
             onEventClick = { event ->
-                // Open event details
                 val intent = Intent(this, OpportunityDetailActivity::class.java)
                 intent.putExtra("event_id", event.event_id)
                 startActivity(intent)
             },
             onRemoveClick = { event ->
-                // Confirm and remove from favorites
                 showRemoveConfirmation(event)
             }
         )
@@ -124,9 +187,6 @@ class SavedEvents : AppCompatActivity() {
         }
     }
 
-    // -------------------------------
-    // SEARCH BAR
-    // -------------------------------
     private fun setupSearch() {
         searchInput.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
@@ -137,9 +197,6 @@ class SavedEvents : AppCompatActivity() {
         })
     }
 
-    // -------------------------------
-    // FILTER BUTTONS
-    // -------------------------------
     private fun setupFilters() {
         btnFilterDate.setOnClickListener { showDatePicker() }
         btnFilterOrganization.setOnClickListener { showOrganizationFilter() }
@@ -203,9 +260,6 @@ class SavedEvents : AppCompatActivity() {
             .show()
     }
 
-    // -------------------------------
-    // FILTER LOGIC
-    // -------------------------------
     private fun filterEvents(search: String) {
         var filtered = if (search.isEmpty()) {
             allEvents
@@ -227,22 +281,18 @@ class SavedEvents : AppCompatActivity() {
     private fun applyFiltersOnList(list: List<Event>) {
         var filtered = list.toMutableList()
 
-        // Apply date filter
         selectedDate?.let { date ->
             filtered = filtered.filter { it.event_date == date }.toMutableList()
         }
 
-        // Apply organization filter
         selectedOrganization?.let { org ->
             filtered = filtered.filter { it.organizer.name == org }.toMutableList()
         }
 
-        // Apply location filter
         selectedLocation?.let { loc ->
             filtered = filtered.filter { it.event_location == loc }.toMutableList()
         }
 
-        // Update adapter
         savedEventsAdapter.updateEvents(filtered)
 
         if (filtered.isEmpty()) {
@@ -250,19 +300,14 @@ class SavedEvents : AppCompatActivity() {
         }
     }
 
-    // -------------------------------
-    // LOAD SAVED EVENTS FROM SERVER
-    // -------------------------------
     private fun loadSavedEvents() {
         val isOnline = NetworkStateReceiver.isNetworkAvailable(this)
 
         if (!isOnline) {
-            // Load from offline cache
             loadSavedEventsOffline()
             return
         }
 
-        // Load from server
         progressDialog.show()
 
         val url = "${API_BASE_URL}get_saved_events.php?user_id=$userId"
@@ -276,7 +321,6 @@ class SavedEvents : AppCompatActivity() {
             override fun onFailure(call: Call, e: IOException) {
                 runOnUiThread {
                     progressDialog.dismiss()
-                    // Fallback to offline cache
                     loadSavedEventsOffline()
                     Toast.makeText(
                         this@SavedEvents,
@@ -422,12 +466,9 @@ class SavedEvents : AppCompatActivity() {
                         val message = jsonResponse.getString("message")
 
                         if (status == "success") {
-                            // Remove from all events list
                             allEvents.remove(event)
                             savedEventsAdapter.removeEvent(event)
                             Toast.makeText(this@SavedEvents, message, Toast.LENGTH_SHORT).show()
-
-                            // Reapply filters after removal
                             applyFilters()
                         } else {
                             Toast.makeText(this@SavedEvents, message, Toast.LENGTH_SHORT).show()
@@ -447,16 +488,11 @@ class SavedEvents : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        // Sync if online, then reload events
         if (NetworkStateReceiver.isNetworkAvailable(this)) {
             syncPendingOperations()
         }
         loadSavedEvents()
     }
-
-    // -------------------------------
-    // OFFLINE MODE SUPPORT
-    // -------------------------------
 
     private fun loadSavedEventsOffline() {
         val cachedEvents = offlineSyncManager.getSavedEventsFromCache(userId)
@@ -493,6 +529,17 @@ class SavedEvents : AppCompatActivity() {
                     ).show()
                 }
             }
+        }
+    }
+
+    override fun onBackPressed() {
+        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            drawerLayout.closeDrawer(GravityCompat.START)
+        } else {
+            val intent = Intent(this, VolunteerHomeActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            startActivity(intent)
+            finish()
         }
     }
 }

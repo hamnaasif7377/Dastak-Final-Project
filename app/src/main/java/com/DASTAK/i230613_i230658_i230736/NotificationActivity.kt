@@ -2,12 +2,16 @@ package com.DASTAK.i230613_i230658_i230736
 
 import android.app.ProgressDialog
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import okhttp3.*
@@ -17,9 +21,10 @@ import java.io.IOException
 
 class NotificationActivity : AppCompatActivity() {
 
+    private lateinit var drawerLayout: DrawerLayout
     private lateinit var btnBack: ImageView
+    private lateinit var btnMenu: ImageView
     private lateinit var recyclerView: RecyclerView
-    private lateinit var emptyStateText: TextView
     private lateinit var adapter: NotificationAdapter
     private lateinit var progressDialog: ProgressDialog
 
@@ -42,19 +47,30 @@ class NotificationActivity : AppCompatActivity() {
         }
 
         initializeViews()
+        setupDrawerMenu()
         loadNotifications()
     }
 
     private fun initializeViews() {
+        drawerLayout = findViewById(R.id.drawer_layout)
         btnBack = findViewById(R.id.btnBack)
+        btnMenu = findViewById(R.id.btnMenu)
         recyclerView = findViewById(R.id.notificationsRecyclerView)
 
         progressDialog = ProgressDialog(this)
         progressDialog.setMessage("Loading notifications...")
         progressDialog.setCancelable(false)
 
+        // Back button - navigate to VolunteerHomeActivity
         btnBack.setOnClickListener {
+            val intent = Intent(this, VolunteerHomeActivity::class.java)
+            startActivity(intent)
             finish()
+        }
+
+        // Menu button - open drawer
+        btnMenu.setOnClickListener {
+            drawerLayout.openDrawer(GravityCompat.START)
         }
 
         adapter = NotificationAdapter(
@@ -65,6 +81,71 @@ class NotificationActivity : AppCompatActivity() {
 
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = adapter
+    }
+
+    private fun setupDrawerMenu() {
+        // Home Menu Item
+        findViewById<LinearLayout>(R.id.menu_home).setOnClickListener {
+            drawerLayout.closeDrawer(GravityCompat.START)
+            val intent = Intent(this, VolunteerHomeActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            startActivity(intent)
+            finish()
+        }
+
+        // Edit Profile
+        findViewById<LinearLayout>(R.id.menu_edit_profile).setOnClickListener {
+            drawerLayout.closeDrawer(GravityCompat.START)
+            // TODO: Open Edit Profile Activity
+            Toast.makeText(this, "Edit Profile - Coming Soon", Toast.LENGTH_SHORT).show()
+        }
+
+        // Browse Activities
+        findViewById<LinearLayout>(R.id.menu_browse_activities).setOnClickListener {
+            drawerLayout.closeDrawer(GravityCompat.START)
+            val intent = Intent(this, BrowseActivitiesActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            startActivity(intent)
+            finish()
+        }
+
+        // Saved Events
+        findViewById<LinearLayout>(R.id.menu_saved).setOnClickListener {
+            drawerLayout.closeDrawer(GravityCompat.START)
+            val intent = Intent(this, SavedEvents::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            startActivity(intent)
+            finish()
+        }
+
+        // Notifications - already on this page
+        findViewById<LinearLayout>(R.id.menu_notifications).setOnClickListener {
+            drawerLayout.closeDrawer(GravityCompat.START)
+        }
+
+        // My Contributions
+        findViewById<LinearLayout>(R.id.menu_my_contributions).setOnClickListener {
+            drawerLayout.closeDrawer(GravityCompat.START)
+            // TODO: Open My Contributions Activity
+            Toast.makeText(this, "My Contributions - Coming Soon", Toast.LENGTH_SHORT).show()
+        }
+
+        // Logout
+        findViewById<LinearLayout>(R.id.menu_logout).setOnClickListener {
+            logoutUser()
+        }
+    }
+
+    private fun logoutUser() {
+        val sharedPref = getSharedPreferences("userPrefs", Context.MODE_PRIVATE)
+        with(sharedPref.edit()) {
+            clear()
+            apply()
+        }
+
+        val intent = Intent(this, RoleActivity::class.java)
+        startActivity(intent)
+        finishAffinity()
     }
 
     private fun loadNotifications() {
@@ -111,7 +192,6 @@ class NotificationActivity : AppCompatActivity() {
                         Log.d("NotificationActivity", "Response code: ${response.code}")
                         Log.d("NotificationActivity", "Response body: $responseBody")
 
-                        // Check if response starts with HTML (common error indicator)
                         if (responseBody.trim().startsWith("<")) {
                             Log.e("NotificationActivity", "Received HTML instead of JSON")
                             Toast.makeText(
@@ -260,7 +340,6 @@ class NotificationActivity : AppCompatActivity() {
                                 Toast.LENGTH_LONG
                             ).show()
 
-                            // Update the button state without reloading all notifications
                             val newStatus = if (action == "accept") "accepted" else "rejected"
                             adapter.updateRegistrationStatus(position, newStatus)
                         } else {
@@ -282,5 +361,15 @@ class NotificationActivity : AppCompatActivity() {
                 }
             }
         })
+    }
+
+    override fun onBackPressed() {
+        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            drawerLayout.closeDrawer(GravityCompat.START)
+        } else {
+            val intent = Intent(this, VolunteerHomeActivity::class.java)
+            startActivity(intent)
+            finish()
+        }
     }
 }
