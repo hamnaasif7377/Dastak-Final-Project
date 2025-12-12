@@ -267,7 +267,9 @@ class BrowseActivitiesActivity : AppCompatActivity() {
                                     user_id = org.getInt("user_id"),
                                     name = org.getString("name"),
                                     profile_image = if (org.isNull("profile_image")) null else org.getString("profile_image")
-                                )
+                                ),
+                                latitude = obj.getDouble("latitude"),
+                                longitude = obj.getDouble("longitude")
                             )
 
                             list.add(event)

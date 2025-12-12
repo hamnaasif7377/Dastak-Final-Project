@@ -4,6 +4,7 @@ import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.preference.PreferenceManager
 import android.util.Log
 import android.widget.Button
 import android.widget.ImageView
@@ -17,6 +18,10 @@ import org.json.JSONObject
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
+import org.osmdroid.config.Configuration
+import org.osmdroid.views.MapView
+import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.overlay.Marker
 
 class OpportunityDetailActivity : AppCompatActivity() {
 
@@ -34,6 +39,7 @@ class OpportunityDetailActivity : AppCompatActivity() {
     private lateinit var eventDetailMeetingPoint: TextView
     private lateinit var eventDetailContact: TextView
     private lateinit var btnRegister: Button
+    private lateinit var mapView: MapView
 
     private lateinit var progressDialog: ProgressDialog
     private val client = OkHttpClient()
@@ -52,7 +58,6 @@ class OpportunityDetailActivity : AppCompatActivity() {
 
         // Get event_id from intent
         eventId = intent.getIntExtra("event_id", -1)
-
         if (eventId == -1) {
             Toast.makeText(this, "Error: Event not found", Toast.LENGTH_SHORT).show()
             finish()
@@ -63,8 +68,9 @@ class OpportunityDetailActivity : AppCompatActivity() {
         val sharedPref = getSharedPreferences("userPrefs", Context.MODE_PRIVATE)
         userId = sharedPref.getInt("user_id", -1)
 
-        // Initialize offline sync manager
         offlineSyncManager = OfflineSyncManager(this)
+
+        Configuration.getInstance().load(this, PreferenceManager.getDefaultSharedPreferences(this))
 
         initializeViews()
         loadEventDetails()
@@ -85,181 +91,110 @@ class OpportunityDetailActivity : AppCompatActivity() {
         eventDetailMeetingPoint = findViewById(R.id.eventDetailMeetingPoint)
         eventDetailContact = findViewById(R.id.eventDetailContact)
         btnRegister = findViewById(R.id.btnRegister)
+        mapView = findViewById(R.id.eventMapView)
 
         progressDialog = ProgressDialog(this)
         progressDialog.setMessage("Loading event details...")
         progressDialog.setCancelable(false)
 
-        // Back button
-        btnBack.setOnClickListener {
-            finish()
-        }
-
-        // Menu button
-        btnMenu.setOnClickListener {
-            Toast.makeText(this, "Menu clicked", Toast.LENGTH_SHORT).show()
-        }
-
-        // Favorite button
-        btnFavorite.setOnClickListener {
-            toggleFavorite()
-        }
-
-        // Register button
-        btnRegister.setOnClickListener {
-            registerForEvent()
-        }
+        btnBack.setOnClickListener { finish() }
+        btnMenu.setOnClickListener { Toast.makeText(this, "Menu clicked", Toast.LENGTH_SHORT).show() }
+        btnFavorite.setOnClickListener { toggleFavorite() }
+        btnRegister.setOnClickListener { registerForEvent() }
     }
 
     private fun loadEventDetails() {
-        // Check if network is available
-        if (!NetworkStateReceiver.isNetworkAvailable(this)) {
-            // Load from cache in offline mode
-            loadEventFromCache()
-            return
-        }
-
         progressDialog.show()
 
-        val url = "${API_BASE_URL}get_event_detail.php?event_id=$eventId"
-
         val request = Request.Builder()
-            .url(url)
-            .get()
+            .url("$API_BASE_URL/get_event_detail.php?event_id=$eventId")
             .build()
 
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 runOnUiThread {
                     progressDialog.dismiss()
-                    Log.e("OpportunityDetail", "Network error, loading from cache", e)
-                    // On failure, try to load from cache
-                    loadEventFromCache()
+                    Toast.makeText(this@OpportunityDetailActivity, "Failed to load event", Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onResponse(call: Call, response: Response) {
-                val responseBody = response.body?.string()
+                val body = response.body?.string()
+                if (body.isNullOrEmpty()) {
+                    runOnUiThread {
+                        progressDialog.dismiss()
+                        Toast.makeText(this@OpportunityDetailActivity, "Empty response", Toast.LENGTH_SHORT).show()
+                    }
+                    return
+                }
 
-                runOnUiThread {
-                    progressDialog.dismiss()
-
-                    try {
-                        if (responseBody.isNullOrEmpty()) {
-                            Toast.makeText(
-                                this@OpportunityDetailActivity,
-                                "Empty response from server",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                            loadEventFromCache()
-                            return@runOnUiThread
+                try {
+                    val json = JSONObject(body)
+                    if (json.getString("status") == "success") {
+                        val eventJson = json.getJSONObject("event")
+                        currentEvent = Event.fromJson(eventJson)
+                        runOnUiThread {
+                            progressDialog.dismiss()
+                            displayEventDetails(currentEvent!!)
+                            setupMap(currentEvent!!)
                         }
-
-                        Log.d("OpportunityDetail", "Response: $responseBody")
-
-                        val jsonResponse = JSONObject(responseBody)
-                        val status = jsonResponse.getString("status")
-
-                        if (status == "success") {
-                            val eventObj = jsonResponse.getJSONObject("event")
-                            displayEventDetails(eventObj)
-                            // Check if event is saved
-                            checkIfEventIsSaved()
-                            // Check registration status
-                            checkRegistrationStatus()
-                        } else {
-                            val message = jsonResponse.optString("message", "Failed to load event details")
-                            Toast.makeText(this@OpportunityDetailActivity, message, Toast.LENGTH_SHORT).show()
-                            loadEventFromCache()
+                    } else {
+                        runOnUiThread {
+                            progressDialog.dismiss()
+                            Toast.makeText(this@OpportunityDetailActivity, json.getString("message"), Toast.LENGTH_SHORT).show()
                         }
-
-                    } catch (e: Exception) {
-                        Toast.makeText(
-                            this@OpportunityDetailActivity,
-                            "Error parsing data: ${e.message}",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        Log.e("OpportunityDetail", "Parse error", e)
-                        Log.e("OpportunityDetail", "Response was: $responseBody")
-                        loadEventFromCache()
+                    }
+                } catch (e: Exception) {
+                    runOnUiThread {
+                        progressDialog.dismiss()
+                        Log.e("OpportunityDetail", "JSON parsing error", e)
+                        Toast.makeText(this@OpportunityDetailActivity, "Error parsing event details", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
         })
     }
 
-    private fun loadEventFromCache() {
-        val cachedEvent = offlineSyncManager.getCachedEvent(eventId)
+    private fun setupMap(event: Event) {
+        mapView.setMultiTouchControls(true)
 
-        if (cachedEvent != null) {
-            currentEvent = cachedEvent
-            displayEventFromCache(cachedEvent)
+        val lat = event.latitude ?: 33.6844
+        val lon = event.longitude ?: 73.0479
 
-            // Check if event is saved locally
-            isSaved = offlineSyncManager.isEventSavedLocally(eventId)
-            updateFavoriteIcon()
+        if (lat != null && lon != null) {
 
-            Toast.makeText(
-                this,
-                "Showing cached event (Offline Mode)",
-                Toast.LENGTH_SHORT
-            ).show()
+            val startPoint = GeoPoint(lat, lon)
+
+            mapView.controller.setZoom(15.0)
+            mapView.controller.setCenter(startPoint)
+
+            // Add marker
+            val marker = Marker(mapView)
+            marker.position = startPoint
+            marker.title = event.event_name
+            mapView.overlays.add(marker)
+
         } else {
-            Toast.makeText(
-                this,
-                "Event not available offline. Please connect to the internet.",
-                Toast.LENGTH_LONG
-            ).show()
-            finish()
+            Toast.makeText(this, "Invalid coordinates", Toast.LENGTH_SHORT).show()
         }
     }
 
-    private fun displayEventFromCache(event: Event) {
-        // Basic info
+
+
+    private fun displayEventDetails(event: Event) {
         eventDetailTitle.text = event.event_name
         eventDetailOrganization.text = event.organizer.name
         eventDetailLocation.text = event.event_location
-
-        // Date and time
         eventDetailDateTime.text = formatDateTime(event.event_date, event.event_time)
-
-        // Overview (description)
         eventDetailOverview.text = event.event_description
+        eventDetailTasks.text = event.volunteer_tasks ?: "Tasks will be assigned on the day of the event."
+        eventDetailBring.text = event.things_to_bring ?: "No specific items required."
+        eventDetailMeetingPoint.text = event.meeting_point ?: "Meeting point will be shared after registration."
+        eventDetailContact.text = event.contact_info ?: "Contact info not available."
 
-        // Volunteer tasks
-        if (!event.volunteer_tasks.isNullOrEmpty()) {
-            eventDetailTasks.text = event.volunteer_tasks
-        } else {
-            eventDetailTasks.text = "Tasks will be assigned on the day of the event."
-        }
-
-        // Things to bring
-        if (!event.things_to_bring.isNullOrEmpty()) {
-            eventDetailBring.text = event.things_to_bring
-        } else {
-            eventDetailBring.text = "No specific items required."
-        }
-
-        // Meeting point
-        if (!event.meeting_point.isNullOrEmpty()) {
-            eventDetailMeetingPoint.text = event.meeting_point
-        } else {
-            eventDetailMeetingPoint.text = "Meeting point will be shared after registration."
-        }
-
-        // Contact info
-        if (!event.contact_info.isNullOrEmpty()) {
-            eventDetailContact.text = event.contact_info
-        } else {
-            eventDetailContact.text = "Contact info not available"
-        }
-
-        // Load event poster image
         if (!event.poster_image.isNullOrEmpty()) {
-            val imageUrl = Constants.BASE_URL + event.poster_image
-
             Glide.with(this)
-                .load(imageUrl)
+                .load(Constants.BASE_URL + event.poster_image)
                 .placeholder(R.drawable.flood_relief)
                 .error(R.drawable.flood_relief)
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
@@ -269,63 +204,15 @@ class OpportunityDetailActivity : AppCompatActivity() {
         }
     }
 
-    private fun displayEventDetails(eventObj: JSONObject) {
-        try {
-            val organizerObj = eventObj.getJSONObject("organizer")
-
-            // Create Event object
-            currentEvent = Event(
-                event_id = eventObj.getInt("event_id"),
-                event_name = eventObj.getString("event_name"),
-                event_location = eventObj.getString("event_location"),
-                event_date = eventObj.getString("event_date"),
-                event_time = if (eventObj.isNull("event_time")) null else eventObj.getString("event_time"),
-                event_description = eventObj.getString("event_description"),
-                poster_image = if (eventObj.isNull("poster_image")) null else eventObj.getString("poster_image"),
-                volunteer_tasks = if (eventObj.isNull("volunteer_tasks")) null else eventObj.getString("volunteer_tasks"),
-                things_to_bring = if (eventObj.isNull("things_to_bring")) null else eventObj.getString("things_to_bring"),
-                meeting_point = if (eventObj.isNull("meeting_point")) null else eventObj.getString("meeting_point"),
-                contact_info = if (eventObj.isNull("contact_info")) null else eventObj.getString("contact_info"),
-                status = eventObj.getString("status"),
-                participant_count = eventObj.getInt("participant_count"),
-                created_at = eventObj.getString("created_at"),
-                organizer = Organizer(
-                    user_id = organizerObj.getInt("user_id"),
-                    name = organizerObj.getString("name"),
-                    profile_image = if (organizerObj.isNull("profile_image")) null else organizerObj.getString("profile_image")
-                )
-            )
-
-            // Cache the event for offline access
-            currentEvent?.let { offlineSyncManager.cacheEvent(it) }
-
-            // Display using the Event object
-            displayEventFromCache(currentEvent!!)
-
-        } catch (e: Exception) {
-            Log.e("OpportunityDetail", "Error displaying details", e)
-            Toast.makeText(this, "Error displaying event details", Toast.LENGTH_SHORT).show()
-        }
-    }
-
     private fun formatDateTime(dateString: String, timeString: String?): String {
         return try {
             val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
             val outputFormat = SimpleDateFormat("d MMM yyyy", Locale.getDefault())
             val date = inputFormat.parse(dateString)
             val formattedDate = outputFormat.format(date ?: Date())
-
-            if (timeString != null && timeString.isNotEmpty()) {
-                "$formattedDate · $timeString"
-            } else {
-                formattedDate
-            }
+            if (!timeString.isNullOrEmpty()) "$formattedDate · $timeString" else formattedDate
         } catch (e: Exception) {
-            if (timeString != null && timeString.isNotEmpty()) {
-                "$dateString · $timeString"
-            } else {
-                dateString
-            }
+            if (!timeString.isNullOrEmpty()) "$dateString · $timeString" else dateString
         }
     }
 
@@ -335,6 +222,7 @@ class OpportunityDetailActivity : AppCompatActivity() {
             return
         }
 
+        // Show loading dialog
         progressDialog.setMessage("Sending registration request...")
         progressDialog.show()
 
@@ -355,75 +243,56 @@ class OpportunityDetailActivity : AppCompatActivity() {
                     Toast.makeText(
                         this@OpportunityDetailActivity,
                         "Network error: ${e.message}",
-                        Toast.LENGTH_LONG
+                        Toast.LENGTH_SHORT
                     ).show()
-                    Log.e("OpportunityDetail", "Registration error", e)
                 }
             }
 
             override fun onResponse(call: Call, response: Response) {
                 val responseBody = response.body?.string()
-
                 runOnUiThread {
                     progressDialog.dismiss()
                     try {
-                        if (responseBody.isNullOrEmpty()) {
-                            Toast.makeText(
-                                this@OpportunityDetailActivity,
-                                "Empty response from server",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                            return@runOnUiThread
-                        }
-
-                        Log.d("OpportunityDetail", "Registration response: $responseBody")
-
-                        val jsonResponse = JSONObject(responseBody)
-                        val status = jsonResponse.getString("status")
-                        val message = jsonResponse.getString("message")
+                        val json = JSONObject(responseBody ?: "{}")
+                        val status = json.getString("status")
+                        val message = json.getString("message")
 
                         if (status == "success") {
-                            Toast.makeText(
-                                this@OpportunityDetailActivity,
-                                message,
-                                Toast.LENGTH_LONG
-                            ).show()
-
-                            // Navigate to confirmation if RegisterConfirmation activity exists
-                            try {
-                                val intent = Intent(
-                                    this@OpportunityDetailActivity,
-                                    RegisterConfirmation::class.java
-                                )
-                                startActivity(intent)
-                            } catch (e: Exception) {
-                                Log.d("OpportunityDetail", "RegisterConfirmation activity not found")
-                            }
-
                             registrationStatus = "pending"
                             updateRegisterButton()
+
+                            // Show success toast
+                            Toast.makeText(
+                                this@OpportunityDetailActivity,
+                                "Request sent for registration",
+                                Toast.LENGTH_SHORT
+                            ).show()
+
+                            // Navigate to RegisterConfirmationActivity
+                            val intent = Intent(this@OpportunityDetailActivity, RegisterConfirmation::class.java)
+                            intent.putExtra("event_id", eventId)
+                            intent.putExtra("event_name", currentEvent?.event_name)
+                            startActivity(intent)
 
                         } else {
                             Toast.makeText(
                                 this@OpportunityDetailActivity,
-                                message,
-                                Toast.LENGTH_LONG
+                                "Error: $message",
+                                Toast.LENGTH_SHORT
                             ).show()
                         }
-
                     } catch (e: Exception) {
+                        Log.e("OpportunityDetail", "Registration parse error", e)
                         Toast.makeText(
                             this@OpportunityDetailActivity,
-                            "Error: ${e.message}",
-                            Toast.LENGTH_LONG
+                            "Error processing registration",
+                            Toast.LENGTH_SHORT
                         ).show()
-                        Log.e("OpportunityDetail", "Parse error", e)
                     }
                 }
             }
         })
     }
-
     private fun checkRegistrationStatus() {
         if (userId == -1) return
 

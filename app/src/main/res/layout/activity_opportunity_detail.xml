@@ -382,6 +382,12 @@
                 android:paddingStart="56dp"
                 android:paddingEnd="56dp" />
 
+            <org.osmdroid.views.MapView
+                android:id="@+id/eventMapView"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:layout_margin="16dp"/>
+
         </LinearLayout>
 
     </ScrollView>

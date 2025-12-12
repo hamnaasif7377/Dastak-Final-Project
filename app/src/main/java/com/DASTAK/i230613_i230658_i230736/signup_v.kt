@@ -62,7 +62,7 @@ class signup_v : AppCompatActivity() {
                         usernameInput.text.clear()
                         emailInput.text.clear()
                         passwordInput.text.clear()
-
+                        FCMTokenService.initializeFCM(this)
                         // Redirect to login activity
                         val intent = Intent(this@signup_v, login_v::class.java)
                         startActivity(intent)

@@ -94,10 +94,14 @@
 
             <ImageView
                 android:id="@+id/bannerImage"
-                android:layout_width="match_parent"
-                android:layout_height="135dp"
-                android:src="@drawable/alkhidmat"
+                android:layout_width="550dp"
+                android:layout_height="140dp"
+                android:src="@drawable/mainpho"
                 android:scaleType="fitCenter"
+                android:paddingRight="5dp"
+                android:paddingLeft="5dp"
+                android:paddingTop="5dp"
+                android:paddingBottom="5dp"
                 android:contentDescription="Organization Banner" />
 
             <ImageView
@@ -217,7 +221,7 @@
                                 android:id="@+id/operationLocationsList"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="• Khyber Pakhtunkhwa\n• Gilgit Baltistan\n• Azad Jammu &amp; Kashmir\n• Central Punjab\n• South Punjab\n• North Punjab\n• Karachi\n• Lahore"
+                                android:text="Add the list of your locations and they will be shown in the form of bullets"
                                 android:textColor="#808080"
                                 android:textSize="12sp"
                                 android:lineSpacingExtra="2dp" />
@@ -239,12 +243,19 @@
                             android:layout_height="wrap_content"
                             android:orientation="vertical"
                             android:padding="12dp">
-
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Organization Description"
+                                android:textColor="#000000"
+                                android:textSize="13sp"
+                                android:textStyle="bold"
+                                android:layout_marginBottom="6dp" />
                             <TextView
                                 android:id="@+id/organizationDescription"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Serving humanity since 1990 through disaster relief, health, education, orphan care, clean water, and community services across Pakistan. This is one of the largest NGOs of Pakistan, with thousands of active volunteers."
+                                android:text="(Write the organization description here which  may include the history background etc.)"
                                 android:textColor="#808080"
                                 android:textSize="12sp"
                                 android:lineSpacingExtra="2dp" />
@@ -283,7 +294,7 @@
                             android:id="@+id/programsList"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="• Orphan Care Program\n• Education Program\n• Community Services"
+                            android:text="Provide a list of your organizations here"
                             android:textColor="#808080"
                             android:textSize="12sp"
                             android:lineSpacingExtra="4dp" />
@@ -418,7 +429,7 @@
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:src="@drawable/ic_briefcase"
+                android:src="@drawable/list1"
                 android:layout_marginEnd="12dp" />
 
             <TextView
@@ -443,7 +454,7 @@
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:src="@drawable/ic_notification"
+                android:src="@drawable/notification"
                 android:layout_marginEnd="12dp" />
 
             <TextView

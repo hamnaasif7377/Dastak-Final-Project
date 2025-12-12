@@ -403,6 +403,9 @@ class createOpportunityorg : AppCompatActivity() {
             override fun onResponse(call: Call, response: Response) {
                 val responseBody = response.body?.string()
 
+                Log.e("CreateOpportunity", "Full Response Code: ${response.code}")
+                Log.e("CreateOpportunity", "Full Response Body: $responseBody")
+
                 runOnUiThread {
                     progressDialog.dismiss()
                     Log.d("CreateOpportunity", "Raw Response: $responseBody")

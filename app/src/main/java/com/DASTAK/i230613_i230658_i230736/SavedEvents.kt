@@ -56,6 +56,7 @@ class SavedEvents : AppCompatActivity() {
         val sharedPref = getSharedPreferences("userPrefs", Context.MODE_PRIVATE)
         userId = sharedPref.getInt("user_id", -1)
 
+
         if (userId == -1) {
             Toast.makeText(this, "Please login first", Toast.LENGTH_SHORT).show()
             finish()
@@ -379,6 +380,10 @@ class SavedEvents : AppCompatActivity() {
                                         name = organizerObj.getString("name"),
                                         profile_image = if (organizerObj.isNull("profile_image")) null else organizerObj.getString("profile_image")
                                     )
+                                    ,
+                                    latitude = eventObj.optDouble("latitude", 0.0),
+                                    longitude = eventObj.optDouble("longitude", 0.0)
+
                                 )
 
                                 eventsList.add(event)

@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
@@ -31,7 +30,9 @@ class NotificationActivity : AppCompatActivity() {
     private val client = OkHttpClient()
     private val API_BASE_URL = Constants.BASE_URL
     private val notifications = mutableListOf<Notification>()
+
     private var userId: Int = -1
+    private var userRole: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,12 +40,15 @@ class NotificationActivity : AppCompatActivity() {
 
         val sharedPref = getSharedPreferences("userPrefs", Context.MODE_PRIVATE)
         userId = sharedPref.getInt("user_id", -1)
+        userRole = sharedPref.getString("role", "") ?: ""
 
-        if (userId == -1) {
+        if (userId == -1 || userRole.isEmpty()) {
             Toast.makeText(this, "Please login first", Toast.LENGTH_SHORT).show()
             finish()
             return
         }
+
+        Log.d("NotificationActivity", "User ID: $userId, Role: $userRole")
 
         initializeViews()
         setupDrawerMenu()
@@ -61,11 +65,9 @@ class NotificationActivity : AppCompatActivity() {
         progressDialog.setMessage("Loading notifications...")
         progressDialog.setCancelable(false)
 
-        // Back button - navigate to VolunteerHomeActivity
+        // Back button - navigate based on role
         btnBack.setOnClickListener {
-            val intent = Intent(this, VolunteerHomeActivity::class.java)
-            startActivity(intent)
-            finish()
+            navigateToHome()
         }
 
         // Menu button - open drawer
@@ -73,10 +75,15 @@ class NotificationActivity : AppCompatActivity() {
             drawerLayout.openDrawer(GravityCompat.START)
         }
 
+        // Initialize adapter with accept/reject callbacks
         adapter = NotificationAdapter(
             notifications,
-            onAccept = { registrationId, position -> respondToRegistration(registrationId, "accept", position) },
-            onReject = { registrationId, position -> respondToRegistration(registrationId, "reject", position) }
+            onAccept = { registrationId, position ->
+                respondToRegistration(registrationId, "accept", position)
+            },
+            onReject = { registrationId, position ->
+                respondToRegistration(registrationId, "reject", position)
+            }
         )
 
         recyclerView.layoutManager = LinearLayoutManager(this)
@@ -87,16 +94,12 @@ class NotificationActivity : AppCompatActivity() {
         // Home Menu Item
         findViewById<LinearLayout>(R.id.menu_home).setOnClickListener {
             drawerLayout.closeDrawer(GravityCompat.START)
-            val intent = Intent(this, VolunteerHomeActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
-            startActivity(intent)
-            finish()
+            navigateToHome()
         }
 
         // Edit Profile
         findViewById<LinearLayout>(R.id.menu_edit_profile).setOnClickListener {
             drawerLayout.closeDrawer(GravityCompat.START)
-            // TODO: Open Edit Profile Activity
             Toast.makeText(this, "Edit Profile - Coming Soon", Toast.LENGTH_SHORT).show()
         }
 
@@ -104,7 +107,6 @@ class NotificationActivity : AppCompatActivity() {
         findViewById<LinearLayout>(R.id.menu_browse_activities).setOnClickListener {
             drawerLayout.closeDrawer(GravityCompat.START)
             val intent = Intent(this, BrowseActivitiesActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
             startActivity(intent)
             finish()
         }
@@ -113,7 +115,6 @@ class NotificationActivity : AppCompatActivity() {
         findViewById<LinearLayout>(R.id.menu_saved).setOnClickListener {
             drawerLayout.closeDrawer(GravityCompat.START)
             val intent = Intent(this, SavedEvents::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
             startActivity(intent)
             finish()
         }
@@ -123,17 +124,37 @@ class NotificationActivity : AppCompatActivity() {
             drawerLayout.closeDrawer(GravityCompat.START)
         }
 
-        // My Contributions
+        // My Contributions / Events (based on role)
         findViewById<LinearLayout>(R.id.menu_my_contributions).setOnClickListener {
             drawerLayout.closeDrawer(GravityCompat.START)
-            // TODO: Open My Contributions Activity
-            Toast.makeText(this, "My Contributions - Coming Soon", Toast.LENGTH_SHORT).show()
+            if (userRole == "organization") {
+                // Navigate to organization's events
+                val intent = Intent(this, EventsActivity::class.java)
+                startActivity(intent)
+                finish()
+            } else {
+                Toast.makeText(this, "My Contributions - Coming Soon", Toast.LENGTH_SHORT).show()
+            }
         }
 
         // Logout
         findViewById<LinearLayout>(R.id.menu_logout).setOnClickListener {
             logoutUser()
         }
+    }
+
+    private fun navigateToHome() {
+        val intent = when (userRole) {
+            "organization" -> Intent(this, organizationProfile::class.java)
+            "volunteer" -> Intent(this, VolunteerHomeActivity::class.java)
+            else -> {
+                Toast.makeText(this, "Invalid role", Toast.LENGTH_SHORT).show()
+                return
+            }
+        }
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+        startActivity(intent)
+        finish()
     }
 
     private fun logoutUser() {
@@ -284,6 +305,12 @@ class NotificationActivity : AppCompatActivity() {
     }
 
     private fun respondToRegistration(registrationId: Int, action: String, position: Int) {
+        // Only organizations can accept/reject registrations
+        if (userRole != "organization") {
+            Toast.makeText(this, "Only organizations can respond to registrations", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         progressDialog.setMessage("Processing...")
         progressDialog.show()
 
@@ -367,9 +394,7 @@ class NotificationActivity : AppCompatActivity() {
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
             drawerLayout.closeDrawer(GravityCompat.START)
         } else {
-            val intent = Intent(this, VolunteerHomeActivity::class.java)
-            startActivity(intent)
-            finish()
+            navigateToHome()
         }
     }
 }

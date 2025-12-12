@@ -223,7 +223,9 @@ class EventsActivity : AppCompatActivity() {
                                             user_id = orgObj.getInt("user_id"),
                                             name = orgObj.getString("name"),
                                             profile_image = orgObj.optString("profile_image", null)
-                                        )
+                                        ),
+                                        latitude = eventObj.optDouble("latitude", 0.0),
+                                        longitude = eventObj.optDouble("longitude", 0.0)
                                     )
                                 )
                             }

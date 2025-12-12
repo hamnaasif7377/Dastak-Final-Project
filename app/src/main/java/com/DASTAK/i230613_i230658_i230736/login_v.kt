@@ -92,20 +92,23 @@ class login_v : AppCompatActivity() {
                     Toast.makeText(this, message, Toast.LENGTH_LONG).show()
 
                     if (status == "success") {
-                        val userObj = json.getJSONObject("user")  // ← get the nested object
+                        val userObj = json.getJSONObject("user")
                         val accountRole = userObj.getString("role")
 
                         // Role validation
                         if (selectedRole == accountRole) {
                             with(sharedPref.edit()) {
                                 putBoolean("isLoggedIn", true)
-                                putInt("user_id", userObj.getInt("user_id")) // ← This was missing!
+                                putInt("user_id", userObj.getInt("user_id"))
                                 putString("name", userObj.getString("name"))
                                 putString("email", userObj.getString("email"))
                                 putString("role", accountRole)
                                 putString("profile_image", userObj.getString("profile_image"))
                                 apply()
                             }
+
+                            // ✅ THIS IS THE FIX - Initialize FCM after login
+                            FCMTokenService.initializeFCM(this)
 
                             val intent = when (accountRole) {
                                 "volunteer" -> Intent(this, VolunteerHomeActivity::class.java)
@@ -122,7 +125,6 @@ class login_v : AppCompatActivity() {
                             ).show()
                         }
                     }
-
 
                 } catch (e: Exception) {
                     e.printStackTrace()
